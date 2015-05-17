@@ -15,6 +15,8 @@ public abstract class Entity {
 	protected TYPE type;
 	protected Coords loc;
 	
+	public abstract Coords getCoords();
 	public abstract void render(Graphics g);
+	public abstract void setCoords(Coords coords);
 	public abstract void tick();
 }

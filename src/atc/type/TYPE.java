@@ -3,10 +3,11 @@ package atc.type;
 public enum TYPE {
 	AIRCRAFT_ARRIVE (0),
 	AIRCRAFT_DEPART (1),
-	AIRPORT (2),
-	RUNWAY_ARRIVE (3),
-	RUNWAY_DEPART (4),
-	XING (5);
+	AIRCRAFT_FINAL (2),
+	AIRPORT (3),
+	RUNWAY_ARRIVE (4),
+	RUNWAY_DEPART (5),
+	XING (6);
 	
 	private int tID;
 	

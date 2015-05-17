@@ -10,12 +10,21 @@ public class Airport extends Entity{
 	public Airport(){
 		this.type = TYPE.AIRPORT;
 		this.loc = new Coords(Game.WIDTH/2, Game.HEIGHT/2);
-		Runway runway = new Runway(loc.getX(), loc.getY(), 280, TYPE.RUNWAY_DEPART);
+		Runway runway = new Runway(loc.getX(), loc.getY(), 280, TYPE.RUNWAY_ARRIVE);
+	}
+	
+	public Coords getCoords(){
+		return loc;
 	}
 	
 	@Override
 	public void render(Graphics g) {
 		Draw.airport(g, (int)loc.getX(), (int)loc.getY());
+	}
+	
+	public void setCoords(Coords coords){
+		loc.x = coords.getX();
+		loc.y = coords.getY();
 	}
 
 	@Override

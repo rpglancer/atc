@@ -12,6 +12,7 @@ import atc.lib.Aircraft;
 import atc.lib.Airport;
 import atc.lib.Entity;
 import atc.lib.Handler;
+import atc.lib.MouseInput;
 import atc.type.TYPE;
 
 public class Game extends Canvas implements Runnable{
@@ -25,7 +26,6 @@ public class Game extends Canvas implements Runnable{
 	private Thread thread;
 	
 	public static void main(String[] args){
-		init();
 		Game game = new Game();
 		game.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		game.setMaximumSize(new Dimension(WIDTH, HEIGHT));
@@ -34,6 +34,7 @@ public class Game extends Canvas implements Runnable{
 		game.requestFocus();
 			
 		JFrame frame = new JFrame("ATC");
+		
 			
 		frame.add(game);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -66,10 +67,12 @@ public class Game extends Canvas implements Runnable{
 		System.exit(1);
 	}
 	
-	private static void init(){
+	private void init(){
+		this.addMouseListener(new MouseInput(this, handler));
+		this.addMouseMotionListener(new MouseInput(this, handler));
 		Airport airport = new Airport();
 		handler.add(airport);
-		Aircraft aircraft = new Aircraft(128, 0, 180, 220, TYPE.AIRCRAFT_ARRIVE);
+		Aircraft aircraft = new Aircraft(128, 0, 180, 160, TYPE.AIRCRAFT_ARRIVE);
 		handler.add(aircraft);
 	}
 	
@@ -92,7 +95,7 @@ public class Game extends Canvas implements Runnable{
 	
 	@Override
 	public void run() {
-//		init();
+		init();
 		long lastTime = System.nanoTime();
 //		final double amountOfTicks = 30.0;			//	Keep @ 30 for now, no need to run 60fps, may drop lower.
 		final double amountOfTicks = 1.0/sweepLength;
@@ -117,6 +120,10 @@ public class Game extends Canvas implements Runnable{
 		stop();	
 	}
 
+//	public static Handler accessHandler(){
+//		return handler;
+//	}
+	
 	public static void registerWithHandler(Entity entity){
 		handler.add(entity);
 	}

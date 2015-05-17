@@ -9,6 +9,7 @@ import atc.Game;
 import atc.type.TYPE;
 
 public class Runway extends Entity{
+	Localizer localizer;
 	private double heading;
 	private int length;
 	TYPE type;
@@ -18,7 +19,18 @@ public class Runway extends Entity{
 		this.heading = heading;
 		this.type = type;
 		length = 32;
+		if(this.type == TYPE.RUNWAY_ARRIVE){
+			localizer = new Localizer(this);
+		}
 		Game.registerWithHandler(this);
+	}
+	
+	public Coords getCoords(){
+		return loc;
+	}
+	
+	public int getHdg(){
+		return (int)this.heading;
 	}
 	
 	@Override
@@ -30,10 +42,7 @@ public class Runway extends Entity{
 		BasicStroke ps = (BasicStroke)g2d.getStroke();
 		
 		g.setColor(Color.cyan);
-		g2d.setStroke(runway);
-		
-//		int ex = (int)(loc.x + length * Math.sin(Math.toRadians(heading)));
-//		int ey = (int)(loc.y + length * Math.cos(Math.toRadians(heading)));
+		g2d.setStroke(runway);		
 		
 		double ex = (loc.x + length * Math.sin(Math.toRadians(heading)));
 		double ey = (loc.y + length * Math.cos(Math.toRadians(heading)));
@@ -42,6 +51,11 @@ public class Runway extends Entity{
 		
 		g2d.setStroke(ps);
 		g.setColor(prev);
+	}
+	
+	public void setCoords(Coords coords){
+		loc.x = coords.getX();
+		loc.y = coords.getY();
 	}
 
 	@Override
