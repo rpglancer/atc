@@ -12,6 +12,7 @@ import atc.lib.Aircraft;
 import atc.lib.Airport;
 import atc.lib.Entity;
 import atc.lib.Handler;
+import atc.lib.Hud;
 import atc.lib.MouseInput;
 import atc.type.TYPE;
 
@@ -20,6 +21,10 @@ public class Game extends Canvas implements Runnable{
 	private static final long serialVersionUID = 6797603345816214805L;
 	public static final int WIDTH = 800;
 	public static final int HEIGHT = 480;
+	public static final int GAMEWIDTH = WIDTH - 192;
+	public static final int HUDWIDTH = 192;
+	public static final int HUDHEIGHT = 256;
+	public static final int INFOHEIGHT = 480 - HUDHEIGHT;
 	private boolean running = false;
 	private BufferedImage image = new BufferedImage(WIDTH,HEIGHT,BufferedImage.TYPE_INT_RGB);
 	private static Handler handler = new Handler();
@@ -72,8 +77,10 @@ public class Game extends Canvas implements Runnable{
 		this.addMouseMotionListener(new MouseInput(this, handler));
 		Airport airport = new Airport();
 		handler.add(airport);
-		Aircraft aircraft = new Aircraft(128, 0, 180, 160, TYPE.AIRCRAFT_ARRIVE);
+		Aircraft aircraft = new Aircraft(256, 64, 180, 140, TYPE.AIRCRAFT_ARRIVE);
+		Hud hud = new Hud();
 		handler.add(aircraft);
+		handler.add(hud);
 	}
 	
 	private void render(){
@@ -119,10 +126,6 @@ public class Game extends Canvas implements Runnable{
 		}
 		stop();	
 	}
-
-//	public static Handler accessHandler(){
-//		return handler;
-//	}
 	
 	public static void registerWithHandler(Entity entity){
 		handler.add(entity);

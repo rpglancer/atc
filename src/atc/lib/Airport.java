@@ -9,7 +9,8 @@ import atc.type.TYPE;
 public class Airport extends Entity{	
 	public Airport(){
 		this.type = TYPE.AIRPORT;
-		this.loc = new Coords(Game.WIDTH/2, Game.HEIGHT/2);
+//		this.loc = new Coords(Game.WIDTH/2, Game.HEIGHT/2);
+		this.loc = new Coords(Game.HUDWIDTH + (Game.GAMEWIDTH/2), Game.HEIGHT/2);
 		Runway runway = new Runway(loc.getX(), loc.getY(), 280, TYPE.RUNWAY_ARRIVE);
 	}
 	
@@ -19,12 +20,23 @@ public class Airport extends Entity{
 	
 	@Override
 	public void render(Graphics g) {
-		Draw.airport(g, (int)loc.getX(), (int)loc.getY());
+//		Draw.airport(g, (int)loc.getX(), (int)loc.getY());
+		Draw.airport(g, this);
+	}
+	
+	public void deselect(){
+		
+	}
+	
+	public void select(){
+		
 	}
 	
 	public void setCoords(Coords coords){
-		loc.x = coords.getX();
-		loc.y = coords.getY();
+		loc.setX(coords.getX());
+		loc.setY(coords.getY());
+//		loc.x = coords.getX();
+//		loc.y = coords.getY();
 	}
 
 	@Override

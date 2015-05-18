@@ -18,11 +18,15 @@ public class Runway extends Entity{
 		loc = new Coords(x, y);
 		this.heading = heading;
 		this.type = type;
-		length = 32;
+		length = (int)(2.5 * Runway.NMPP);
 		if(this.type == TYPE.RUNWAY_ARRIVE){
 			localizer = new Localizer(this);
 		}
 		Game.registerWithHandler(this);
+	}
+	
+	public void deselect(){
+		
 	}
 	
 	public Coords getCoords(){
@@ -44,18 +48,24 @@ public class Runway extends Entity{
 		g.setColor(Color.cyan);
 		g2d.setStroke(runway);		
 		
-		double ex = (loc.x + length * Math.sin(Math.toRadians(heading)));
-		double ey = (loc.y + length * Math.cos(Math.toRadians(heading)));
+		double ex = (loc.getX() + length * Math.sin(Math.toRadians(heading)));
+		double ey = (loc.getY() + length * Math.cos(Math.toRadians(heading)));
 		
-		g2d.drawLine((int)loc.x, (int)loc.y, (int)ex, (int)ey);
+		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
 		
 		g2d.setStroke(ps);
 		g.setColor(prev);
 	}
 	
+	public void select(){
+		
+	}
+	
 	public void setCoords(Coords coords){
-		loc.x = coords.getX();
-		loc.y = coords.getY();
+		loc.setX(coords.getX());
+		loc.setY(coords.getY());
+//		loc.x = coords.getX();
+//		loc.y = coords.getY();
 	}
 
 	@Override
