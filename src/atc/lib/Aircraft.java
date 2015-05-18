@@ -10,44 +10,86 @@ import java.util.Vector;
 import atc.Game;
 import atc.display.Draw;
 import atc.display.Fonts;
+import atc.type.FLIGHT;
 import atc.type.TYPE;
 
 public class Aircraft extends Entity{
-	private String airline;
-	private Vector<Coords> history = new Vector<Coords>();
-	private String flightNumber;
-	private int headingCurrent;
-	private int headingDesired;
-	private int turnRateCur = 0;
-	private int turnRateMax;
-	private double altCurrent;
-	private double altDesired;
-	private int maxAccel = 5;
-	private int maxDecel = -3;
-	private int accelCur = 0;
+	
+	private Boolean isConflict = false;
+	private double altCurrent;		//	Current altitude
+	private double altDesired;		//	Assigned [desired] altitude
+	private double climbCurrent = 0;//	Current climb rate
+	private double climbMax = 2.5;	//	Max climb rate in thousands [Feet:Minute]
+	private double distTraveled = 0.0;
+	
+	private int accelCur = 0;		//	Current acceleration
+	private int accelMax = 5;		//	Max acceleration
+	private int decelMax = -3;		//	Max deceleration
+	private int headingCurrent;		//	Current heading
+	private int headingDesired;		//	Assigned [desired] heading
 	private int kiasCurrent;		//	Knots indicated air speed
 	private int kiasDesired;		//	Knots indicated air speed
-	private int tasCurrent;			//	Knots ground
-	private int tasDesired;			//	Knots ground
-	
-	private double distTraveled = 0.0;
+	private int tasCurrent;			//	Knots ground [true air speed]
+	private int turnRateCur = 0;	//	Current turn rate
+	private int turnRateMax;		//	Maximum turn rate
 
+	private Fix toFix = null;		//	Fix destination
+	private String airline;			//	Aircraft Operator
+	private String flightNumber;	//	Flight number
+	private Vector<Coords> history = new Vector<Coords>();
+	
+	private FLIGHT flight;			//	Flight status
+	
 	public Aircraft(double x, double y, int hdg, int speed, TYPE type){
 		loc = new Coords(x,y);
-		altCurrent = 5.5;
+		altCurrent = 16;
 		altDesired = altCurrent;
 		headingCurrent = hdg;
 		headingDesired = headingCurrent;
 		kiasCurrent = speed;
 		kiasDesired = kiasCurrent;
 		tasCurrent = kiasToTas(kiasCurrent);
-		tasDesired = tasCurrent;
 		turnRateMax = 3;
 		this.type = type;
+		flight = FLIGHT.HANDOFF;
+	}
+
+	public void deselect(){
+		this.isSelected = false;
+	}
+	
+	public Coords getCoords(){
+		return loc;
+	}
+	
+	public int getHdgCur(){
+		return headingCurrent;
+	}
+	
+	public int getHdgDes(){
+		return headingDesired;
+	}
+	
+	public int getKIAS(){
+		return kiasCurrent;
+	}
+	
+	public int getKIASDes(){
+		return kiasDesired;
+	}
+	
+	public boolean isSelected(){
+		return isSelected;
 	}
 	
 	private int kiasToTas(int kias){
 		return (int)(kias + (0.02 * kias * altCurrent));
+	}
+	
+	private double getFPS(){
+		double climb = climbCurrent;
+		climb /= 60;
+		return climb * Game.sweepLength;
 	}
 	
 	private double getKPS(){
@@ -65,28 +107,43 @@ public class Aircraft extends Entity{
 		return altDesired;
 	}
 	
-	public int getHdgCur(){
-		return headingCurrent;
-	}
-	
-	public int getHdgDes(){
-		return headingDesired;
-	}
-	
-	public int getKIAS(){
-		return kiasCurrent;
-	}
-	
 	public int getTAS(){
 		return tasCurrent;
 	}
+
+	@Override
+	public void render(Graphics g) {
+		Graphics2D g2d = (Graphics2D) g;
+		Color prevC = g2d.getColor();
+		Font prevF = g2d.getFont();
+		if(isSelected){
+			Draw.history(g, history);
+			g2d.setColor(Color.yellow);
+		}
+		else{
+			g2d.setColor(Color.green);
+		}
+		Draw.centeredsquare(g, loc, NMPP * 0.25, g2d.getColor(), 2.0f);
+		Draw.centeredcircle(g, loc, 1*NMPP, Color.cyan);
+		double ex = (loc.getX() + (getKPS() * NMPP * 12) * Math.sin(Math.toRadians(headingCurrent)));
+		double ey = (loc.getY() - (getKPS() * NMPP * 12) * Math.cos(Math.toRadians(headingCurrent)));
+		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
+		g2d.setColor(prevC);
+		g2d.setFont(prevF);
+		Draw.flightinfo(g, this);
+	}
 	
-	public boolean isSelected(){
-		return isSelected;
+	public void select(){
+		this.isSelected = true;
 	}
 	
 	public void setAltitudeDesired(double alt){
 		altDesired = alt;
+	}
+
+	public void setCoords(Coords coords){
+		loc.setX(coords.getX());
+		loc.setY(coords.getY());
 	}
 	
 	public void setHeadingDesired(Coords coords){
@@ -112,38 +169,69 @@ public class Aircraft extends Entity{
 		kiasDesired = kts;
 	}
 	
-	private void throttle(){
-		tasCurrent = kiasToTas(kiasCurrent);
-		if(kiasDesired > kiasCurrent){
-			if(kiasDesired - kiasCurrent >= maxAccel){
-				accelCur = maxAccel;
+	@Override
+	public void tick() {
+		move();
+	}
+	
+	private void altitude(){
+		if(altDesired > altCurrent){
+			if(altDesired - altCurrent >= 2.5){
+				climbCurrent = climbMax;
 			}
 			else{
-				accelCur = kiasDesired - kiasCurrent;
+				climbCurrent = altDesired - altCurrent;
 			}
 		}
-		else if(kiasDesired < kiasCurrent){
-			if(kiasCurrent - kiasDesired <= maxDecel){
-				accelCur = maxDecel;
+		else if(altDesired < altCurrent){
+			if(altDesired - altCurrent <= -2.5){
+				climbCurrent = -climbMax;
 			}
 			else{
-				accelCur = kiasCurrent - kiasDesired;
+				climbCurrent = altDesired - altCurrent;
 			}
 		}
 		else{
-			accelCur = 0;
+			climbCurrent = 0;
 		}
-		kiasCurrent += accelCur;
+		altCurrent += getFPS();
+		if(altCurrent >= altDesired - 0.1 && altCurrent <= altDesired + 0.1)
+			altCurrent = altDesired;
 	}
-	
-	public void deselect(){
-		this.isSelected = false;
+
+	private void heading(){
+		setTurnRate();
+		if(turnRateCur == 0)
+			return;
+		int recipOne = 360 - Convert.reciprocal(headingCurrent) + headingDesired;
+		int recipTwo = 0 + Convert.reciprocal(headingCurrent) - headingDesired;
+		if(recipOne >= 360)
+			recipOne -= 360;
+		if(recipOne < 0)
+			recipOne += 360;
+		if(recipTwo >= 360)
+			recipTwo -= 360;
+		if(recipTwo < 0)
+			recipTwo += 360;
+		// left
+		if(recipOne <= recipTwo){
+			headingCurrent -= turnRateCur;
+			if(headingCurrent < 0)
+				headingCurrent += 360;
+		}
+		// right
+		else{
+			headingCurrent += turnRateCur;
+			if(headingCurrent >= 360)
+				headingCurrent -= 360;
+		}
 	}
 	
 	private void move(){
+		altitude();
+		heading();
 		throttle();
-		setTurnRate();
-		turn();
+		
 		double ex = (loc.getX() + (getKPS() * NMPP) * Math.sin(Math.toRadians(headingCurrent)));
 		double ey = (loc.getY() - (getKPS() * NMPP) * Math.cos(Math.toRadians(headingCurrent)));
 		loc.setX(ex);
@@ -156,85 +244,41 @@ public class Aircraft extends Entity{
 				history.remove(9);
 			distTraveled = 0.0;
 		}
+	}
 
-	}
-	
-	private void turn(){
-		if(turnRateCur == 0)
-			return;
-		if(headingDesired - headingCurrent >=0){
-			headingCurrent += turnRateCur;
-			if(headingCurrent >= 360)
-				headingCurrent -= 360;
-		}	
-		else{
-			headingCurrent -= turnRateCur;
-			if(headingCurrent <=0)
-				headingCurrent += 360;
-		}
-	}
-	
-	public void select(){
-		this.isSelected = true;
-	}
-	
 	private void setTurnRate(){
-		if(Math.abs(headingCurrent - headingDesired) >= turnRateMax * Game.sweepLength)
-			turnRateCur = turnRateMax * Game.sweepLength;
-		else
-			turnRateCur = Math.abs(headingCurrent - headingDesired);//  Game.sweepLength;
-	}
-	
-	public Coords getCoords(){
-		return loc;
-	}
-	
-	@Override
-	public void render(Graphics g) {
-		Graphics2D g2d = (Graphics2D) g;
-		Color prevC = g2d.getColor();
-		Font prevF = g2d.getFont();
-		g.setColor(Color.yellow);
-		for(int i = 0; i < history.size(); i++){
-			Coords temp = history.elementAt(i);
-			double x = temp.getX();
-			double y = temp.getY();
-			int w = 3;
-			int h = 3;
-			g.setColor(g.getColor().darker());
-			g2d.drawOval((int)x-2, (int)y-2, w, h);
+		if(headingCurrent != headingDesired){
+			if(Math.abs(headingCurrent - headingDesired) > turnRateMax * Game.sweepLength)
+				turnRateCur = turnRateMax * Game.sweepLength;
+			else
+				turnRateCur = Math.abs(headingCurrent - headingDesired);//  Game.sweepLength;
+			System.out.println(headingCurrent + ", " + headingDesired + ", " + turnRateCur);
 		}
-		FontMetrics fm = g2d.getFontMetrics(Fonts.radarobj);
-		int w = fm.stringWidth(Fonts.flight);
-		int h = fm.getAscent() + fm.getDescent();
-		g2d.setFont(Fonts.radarobj);
-		if(isSelected)
-			g2d.setColor(Color.yellow);
-		else
-			g2d.setColor(Color.green);
-		g2d.drawString(Fonts.flight, (int)loc.getX() - (w/2), (int)loc.getY() + (h/2));
-		Draw.centeredcircle(g, this.getCoords(), 0.5*NMPP, Color.cyan);
-		double ex = (loc.getX() + (getKPS() * NMPP * 12) * Math.sin(Math.toRadians(headingCurrent)));
-		double ey = (loc.getY() - (getKPS() * NMPP * 12) * Math.cos(Math.toRadians(headingCurrent)));
-		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
-		g2d.setColor(prevC);
-		g2d.setFont(prevF);
-		Draw.flightinfo(g, this);
-//		if(isSelected()){
-//			Draw.hud(g, this);
-//		}
+		else turnRateCur = 0;
 	}
 	
-	public void setCoords(Coords coords){
-//		loc.x = coords.getX();
-		loc.setX(coords.getX());
-		loc.setY(coords.getY());
-//		loc.y = coords.getY();
-	}
-
-	@Override
-	public void tick() {
-		move();
+	private void throttle(){
+		tasCurrent = kiasToTas(kiasCurrent);
+		if(kiasDesired > kiasCurrent){
+			if(kiasDesired - kiasCurrent >= accelMax){
+				accelCur = accelMax;
+			}
+			else{
+				accelCur = kiasDesired - kiasCurrent;
+			}
+		}
+		else if(kiasDesired < kiasCurrent){
+			if(kiasDesired - kiasCurrent <= decelMax){
+				accelCur = decelMax;
+			}
+			else{
+				accelCur = kiasCurrent - kiasDesired;
+			}
+		}
+		else{
+			accelCur = 0;
+		}
+		kiasCurrent += accelCur;
 	}
 
 }

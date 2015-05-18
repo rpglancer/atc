@@ -149,9 +149,12 @@ public class Hud extends Entity{
 	public void select(Aircraft a) {
 		if(a!=null){
 			aircraft = a;
-			selectedSpeed = a.getKIAS();
-			selectedAlt = a.getAltCur();
-			selectedHdg = a.getHdgCur();
+			selectedSpeed = a.getKIASDes();
+			selectedAlt = a.getAltDes();
+			selectedHdg = a.getHdgDes();
+//			selectedSpeed = a.getKIAS();
+//			selectedAlt = a.getAltCur();
+//			selectedHdg = a.getHdgCur();
 			isSelected = true;
 		}
 	}
@@ -164,7 +167,11 @@ public class Hud extends Entity{
 
 	@Override
 	public void tick() {
-		// TODO Auto-generated method stub	
+		if(isSelected && aircraft != null){
+			selectedAlt = aircraft.getAltDes();
+			selectedSpeed = aircraft.getKIASDes();
+			selectedHdg = aircraft.getHdgDes();
+		}
 	}
 
 	@Override
@@ -183,7 +190,7 @@ public class Hud extends Entity{
 	}
 	private void adjSpd(int spd){
 		if(spd < 0){
-			if(selectedSpeed > 160)
+			if(selectedSpeed > 140)
 				selectedSpeed += spd;	
 		}
 		else{

@@ -4,7 +4,11 @@ import java.awt.Graphics;
 import java.util.LinkedList;
 
 import atc.type.TYPE;
-
+/**
+ * Manages the additions, removals, retrievals ticks and renderings of all Entities in the Game.
+ * @author Matt Bangert
+ *
+ */
 public class Handler {
 	private LinkedList<Entity> e = new LinkedList<Entity>();
 	private Entity entity;
@@ -60,4 +64,5 @@ public class Handler {
 		}
 		return null;
 	}
+	
 }

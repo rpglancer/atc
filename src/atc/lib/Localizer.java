@@ -3,6 +3,7 @@ package atc.lib;
 import java.awt.Color;
 import java.awt.Graphics;
 
+import javafx.scene.shape.Line;
 import atc.Game;
 import atc.display.Draw;
 
@@ -12,15 +13,18 @@ public class Localizer extends Entity{
 	private Coords inner;
 	private Coords middle;
 	private Coords outer;
-	private Coords thresh;
+	private Line locpath = null;
 	
 	public Localizer(Runway rwy){
+		double x, y, ex, ey;
 		this.rwy = rwy.getCoords();
 		this.hdg = rwy.getHdg();
-		double x, y;
-		x = (this.rwy.getX() + (NMPP*15) * Math.sin(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
-		y = (this.rwy.getY() + (NMPP*15) * Math.cos(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
-		this.thresh = new Coords(x,y);
+		x = this.rwy.getX();
+		y = this.rwy.getY();
+		ex = this.rwy.getX() + (NMPP * 15) * Math.sin(Math.toRadians(Convert.reciprocal(this.hdg)));
+		ey = this.rwy.getY() + (NMPP * 15) * Math.cos(Math.toRadians(Convert.reciprocal(this.hdg)));
+		locpath = new Line(x,y,ex,ey);
+		
 		x = (this.rwy.getX() + (NMPP*12) * Math.sin(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
 		y = (this.rwy.getY() + (NMPP*12) * Math.cos(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
 		this.outer = new Coords(x,y);
@@ -45,13 +49,13 @@ public class Localizer extends Entity{
 	public void render(Graphics g) {
 		Color prevC = g.getColor();
 		g.setColor(Color.darkGray);
-		g.drawLine((int)rwy.getX(), (int)rwy.getY(), (int)thresh.getX(), (int)thresh.getY());
+		
+		g.drawLine((int)locpath.getStartX(), (int)locpath.getStartY(), (int)locpath.getEndX(), (int)locpath.getEndY());
+		
 		Draw.centeredcircle(g, inner, 0.25 * NMPP, Color.cyan);
 		Draw.centeredcircle(g, middle, 0.25 * NMPP, Color.cyan);
 		Draw.centeredcircle(g, outer, 0.25 * NMPP, Color.cyan);
-//		g.drawOval((int)inner.getX() - 0, (int)inner.getY() - 3, 6, 6);
-//		g.drawOval((int)middle.getX() - 0, (int)middle.getY() - 3, 6, 6);
-//		g.drawOval((int)outer.getX() - 0, (int)outer.getY() - 3, 6, 6);
+		
 		g.setColor(prevC);
 	}
 	

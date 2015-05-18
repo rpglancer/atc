@@ -18,7 +18,7 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	};
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
-		if(arg0.getButton() == arg0.BUTTON1){
+		if(arg0.getButton() == MouseEvent.BUTTON1){
 			Coords coords = new Coords(arg0.getX(), arg0.getY());
 			if(arg0.getX() >= 0 && arg0.getX() <= Game.HUDWIDTH){
 				if(arg0.getY() >= 0 && arg0.getY() <= Game.HUDHEIGHT){
@@ -31,7 +31,7 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 				System.out.println(ent);
 			}
 		}
-		if(arg0.getButton() == arg0.BUTTON3){
+		if(arg0.getButton() == MouseEvent.BUTTON3){
 			if(ent != null && ent.type == TYPE.AIRCRAFT_ARRIVE){
 				Aircraft a = (Aircraft)ent;
 				Coords coords = new Coords(arg0.getX(), arg0.getY());

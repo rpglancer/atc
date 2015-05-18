@@ -8,6 +8,7 @@ public class Fonts {
 	public static final String decent = Character.toString((char)9660);
 	public static final String level = Character.toString((char)9658);
 	
+	public static final String fix = Character.toString((char)8710);
 	public static final String flight = Character.toString((char)9674); //9679
 	
 	public static Font hudNumber = new Font("Modern", Font.PLAIN, 20);

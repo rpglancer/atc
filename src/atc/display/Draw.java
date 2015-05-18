@@ -1,5 +1,6 @@
 package atc.display;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -7,7 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Rectangle2D;
+import java.util.Vector;
 
 import atc.lib.Aircraft;
 import atc.lib.Airport;
@@ -50,11 +51,24 @@ public class Draw {
 		Graphics2D g2d = (Graphics2D) g;
 		Color prevC = g2d.getColor();
 		g2d.setColor(color);
-		double x = coords.getX() - radius;
-		double y = coords.getY() - radius;
-		Ellipse2D circle = new Ellipse2D.Double(x,y,radius*2,radius*2);
-		g2d.draw(circle);
+		g2d.drawOval((int)(coords.getX() - radius), (int)(coords.getY() - radius), (int)radius *2, (int)radius * 2);
 		g2d.setColor(prevC);
+	}
+	
+	public static void centeredsquare(Graphics g, Coords coords, double half, Color color, float stroke){
+		BasicStroke acs = new BasicStroke(stroke);
+		Rectangle rect = new Rectangle((int)(coords.getX() - half), (int)(coords.getY() - half), (int)(half * 2), (int)(half * 2));
+		
+		Graphics2D g2d = (Graphics2D) g;
+		Color prevC = g2d.getColor();
+		BasicStroke prevS = (BasicStroke)g2d.getStroke();
+		
+		g2d.setColor(color);
+		g2d.setStroke(acs);
+		g2d.draw(rect);
+		
+		g2d.setColor(prevC);
+		g2d.setStroke(prevS);
 	}
 	
 	public static void flightinfo(Graphics g, Aircraft a){
@@ -65,13 +79,13 @@ public class Draw {
 		FontMetrics fm = g.getFontMetrics(Fonts.radartext);
 		
 		if(a.getAltDes() > a.getAltCur()){
-			s = a.getAltCur() + Fonts.climb + a.getAltDes();
+			s = (int)(a.getAltCur()*10) + Fonts.climb + (int)(a.getAltDes() * 10);
 		}
 		else if(a.getAltDes() < a.getAltCur()){
-			s = a.getAltCur() + Fonts.decent + a.getAltDes();
+			s = (int)(a.getAltCur()*10) + Fonts.decent + (int)(a.getAltDes() * 10);
 		}
 		else{
-			s = a.getAltCur() + "=" + a.getAltDes();
+			s = (int)(a.getAltCur()*10) + "=" + (int)(a.getAltDes() * 10);
 		}
 		
 		if(a.isSelected())
@@ -91,6 +105,24 @@ public class Draw {
 		g.setFont(prevF);
 	}
 
+	public static void history(Graphics g, Vector<Coords>history){
+		Color prevC = g.getColor();
+		Font prevF = g.getFont();
+		g.setColor(Color.yellow);
+		for(int i = 0; i < history.size(); i++){
+			Coords temp = history.elementAt(i);
+//			double x = temp.getX();
+//			double y = temp.getY();
+//			int w = 3;
+//			int h = 3;
+			g.setColor(g.getColor().darker());
+//			g2d.drawOval((int)x-2, (int)y-2, w, h);
+			centeredcircle(g, temp, Aircraft.NMPP * 0.25, g.getColor());
+		}
+		g.setColor(prevC);
+		g.setFont(prevF);
+	}
+	
 	public static void hud(Graphics g, Aircraft a){
 		Graphics2D g2d = (Graphics2D) g;
 		Font prevF = g2d.getFont();

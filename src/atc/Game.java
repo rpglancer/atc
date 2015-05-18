@@ -10,7 +10,9 @@ import javax.swing.JFrame;
 
 import atc.lib.Aircraft;
 import atc.lib.Airport;
+import atc.lib.Coords;
 import atc.lib.Entity;
+import atc.lib.Fix;
 import atc.lib.Handler;
 import atc.lib.Hud;
 import atc.lib.MouseInput;
@@ -81,6 +83,8 @@ public class Game extends Canvas implements Runnable{
 		Hud hud = new Hud();
 		handler.add(aircraft);
 		handler.add(hud);
+		Fix fix = new Fix(new Coords(620, 330));
+		handler.add(fix);
 	}
 	
 	private void render(){
