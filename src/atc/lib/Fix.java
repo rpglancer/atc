@@ -68,6 +68,11 @@ public class Fix extends Entity{
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public Rectangle getArea() {
+		return area;
+	}
 	
 
 }

@@ -2,6 +2,7 @@ package atc.lib;
 
 import java.awt.Graphics;
 import java.util.LinkedList;
+import java.util.Vector;
 
 import atc.type.TYPE;
 /**
@@ -11,9 +12,12 @@ import atc.type.TYPE;
  */
 public class Handler {
 	private LinkedList<Entity> e = new LinkedList<Entity>();
+	private static Vector<Localizer> localizers = new Vector<Localizer>();
 	private Entity entity;
 	
 	public void add(Entity entity){
+		if(entity.type == TYPE.LOCALIZER)
+			localizers.addElement((Localizer)entity);
 		if(entity.type == TYPE.WINDOW_HUD)
 			e.addLast(entity);
 		if(entity.type == TYPE.WINDOW_INFO)
@@ -24,8 +28,7 @@ public class Handler {
 	
 	public void tick(){
 		for(int i = 0; i < e.size(); i++){
-			entity = e.get(i);
-			entity.tick();
+			e.get(i).tick();
 		}
 	}
 	
@@ -35,8 +38,7 @@ public class Handler {
 	
 	public void render(Graphics g){
 		for(int i = 0; i < e.size(); i++){
-			entity = e.get(i);
-			entity.render(g);
+			e.get(i).render(g);
 		}
 	}
 	
@@ -48,21 +50,26 @@ public class Handler {
 		return null;
 	}
 	
+	public static Vector<Localizer> getLocalizers(){
+		return localizers;
+	}
+	
 	public Entity retrieve(Coords coords){
 		for(int i = 0; i < e.size(); i++){
-			entity.deselect();
 			entity = e.get(i);
-			if(coords.getY() >= entity.getCoords().getY() - 2 && coords.getY() <= entity.getCoords().getY() + 2){
-				if(coords.getX() >= entity.getCoords().getX() - 2 && coords.getX() <= entity.getCoords().getX() + 2){
-					if(entity.type == TYPE.AIRCRAFT_ARRIVE){
-						entity.select();
-						getHud().select((Aircraft) entity);
-						return entity;
-					}
+			if(entity.getCoords() == null || entity.getArea() == null)
+				continue;
+			else{
+				if(coords.getX() >= entity.getArea().getMinX() && coords.getX() <= entity.getArea().getMaxX() &&
+						coords.getY() >= entity.getArea().getMinY() && coords.getY() <= entity.getArea().getMaxY()){
+					entity.select();
+					getHud().select((Aircraft) entity);
+					return entity;
 				}
 			}
 		}
+		if(entity != null)
+			entity.deselect();
 		return null;
 	}
-	
 }

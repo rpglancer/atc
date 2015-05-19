@@ -167,11 +167,11 @@ public class Hud extends Entity{
 
 	@Override
 	public void tick() {
-		if(isSelected && aircraft != null){
-			selectedAlt = aircraft.getAltDes();
-			selectedSpeed = aircraft.getKIASDes();
-			selectedHdg = aircraft.getHdgDes();
-		}
+//		if(isSelected && aircraft != null){
+//			selectedAlt = aircraft.getAltDes();
+//			selectedSpeed = aircraft.getKIASDes();
+//			selectedHdg = aircraft.getHdgDes();
+//		}
 	}
 
 	@Override
@@ -216,6 +216,11 @@ public class Hud extends Entity{
 		aircraft.setHeadingDesired(selectedHdg);
 		aircraft.setAltitudeDesired(selectedAlt);
 		deselect();
+	}
+
+	@Override
+	public Rectangle getArea() {
+		return area;
 	}
 	
 }

@@ -32,7 +32,7 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 			}
 		}
 		if(arg0.getButton() == MouseEvent.BUTTON3){
-			if(ent != null && ent.type == TYPE.AIRCRAFT_ARRIVE){
+			if(ent != null && ent.type == TYPE.AIRCRAFT){
 				Aircraft a = (Aircraft)ent;
 				Coords coords = new Coords(arg0.getX(), arg0.getY());
 				a.setHeadingDesired(coords);

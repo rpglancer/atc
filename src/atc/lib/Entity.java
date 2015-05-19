@@ -1,6 +1,7 @@
 package atc.lib;
 
 import java.awt.Graphics;
+import java.awt.Rectangle;
 
 import atc.Game;
 import atc.type.TYPE;
@@ -13,6 +14,7 @@ public abstract class Entity {
 	
 	protected boolean isSelected = false;
 	protected TYPE type;
+	protected Rectangle area = null;
 	protected Coords loc = null;
 	
 	/**
@@ -23,6 +25,7 @@ public abstract class Entity {
 	 * is because getCoords() is returning null. Guaranteed.
 	 * @return	The coordinates of this Entity.
 	 */
+	public abstract Rectangle getArea();
 	public abstract Coords getCoords();
 	public abstract void deselect();
 	public abstract void render(Graphics g);

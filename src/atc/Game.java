@@ -79,7 +79,8 @@ public class Game extends Canvas implements Runnable{
 		this.addMouseMotionListener(new MouseInput(this, handler));
 		Airport airport = new Airport();
 		handler.add(airport);
-		Aircraft aircraft = new Aircraft(256, 64, 180, 140, TYPE.AIRCRAFT_ARRIVE);
+//		Aircraft aircraft = new Aircraft(256, 64, 180, 140, TYPE.AIRCRAFT_ARRIVE);
+		Aircraft aircraft = new Aircraft(256, 64, 180, 140, TYPE.AIRCRAFT);
 		Hud hud = new Hud();
 		handler.add(aircraft);
 		handler.add(hud);
@@ -134,5 +135,8 @@ public class Game extends Canvas implements Runnable{
 	public static void registerWithHandler(Entity entity){
 		handler.add(entity);
 	}
+//	public static Vector<Localizer> getLocalizers(){
+//		return handler.getLocalizers();
+//	}
 	
 }

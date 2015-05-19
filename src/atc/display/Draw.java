@@ -7,7 +7,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.geom.Ellipse2D;
 import java.util.Vector;
 
 import atc.lib.Aircraft;
@@ -111,13 +110,10 @@ public class Draw {
 		g.setColor(Color.yellow);
 		for(int i = 0; i < history.size(); i++){
 			Coords temp = history.elementAt(i);
-//			double x = temp.getX();
-//			double y = temp.getY();
-//			int w = 3;
-//			int h = 3;
-			g.setColor(g.getColor().darker());
+			if(i%3 == 0)
+				g.setColor(g.getColor().darker());
 //			g2d.drawOval((int)x-2, (int)y-2, w, h);
-			centeredcircle(g, temp, Aircraft.NMPP * 0.25, g.getColor());
+			centeredcircle(g, temp, Aircraft.NMPP * 0.125, g.getColor());
 		}
 		g.setColor(prevC);
 		g.setFont(prevF);

@@ -2,20 +2,21 @@ package atc.lib;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.util.Vector;
 
 import atc.Game;
 import atc.display.Draw;
-import atc.display.Fonts;
 import atc.type.FLIGHT;
 import atc.type.TYPE;
 
 public class Aircraft extends Entity{
 	
 	private Boolean isConflict = false;
+	private Boolean isClearILS = true;
 	private double altCurrent;		//	Current altitude
 	private double altDesired;		//	Assigned [desired] altitude
 	private double climbCurrent = 0;//	Current climb rate
@@ -34,6 +35,7 @@ public class Aircraft extends Entity{
 	private int turnRateMax;		//	Maximum turn rate
 
 	private Fix toFix = null;		//	Fix destination
+	private Line2D direction;		//	Magical invisible line that extends in the direction the aircraft is flying.
 	private String airline;			//	Aircraft Operator
 	private String flightNumber;	//	Flight number
 	private Vector<Coords> history = new Vector<Coords>();
@@ -42,6 +44,7 @@ public class Aircraft extends Entity{
 	
 	public Aircraft(double x, double y, int hdg, int speed, TYPE type){
 		loc = new Coords(x,y);
+		area = new Rectangle((int)(loc.getX() - 0.25 * NMPP), (int)(loc.getY() - 0.25 * NMPP), (int)((NMPP * 0.25) * 2),(int)((NMPP * 0.25) * 2) );
 		altCurrent = 16;
 		altDesired = altCurrent;
 		headingCurrent = hdg;
@@ -51,6 +54,10 @@ public class Aircraft extends Entity{
 		tasCurrent = kiasToTas(kiasCurrent);
 		turnRateMax = 3;
 		this.type = type;
+		direction = new Line2D.Double();
+		double ex = (loc.getX() + Game.WIDTH * Math.sin(Math.toRadians(headingCurrent)));
+		double ey = (loc.getY() - Game.WIDTH * Math.cos(Math.toRadians(headingCurrent)));
+		direction.setLine(loc.getX(), loc.getY(), ex, ey);
 		flight = FLIGHT.HANDOFF;
 	}
 
@@ -107,6 +114,11 @@ public class Aircraft extends Entity{
 		return altDesired;
 	}
 	
+	@Override
+	public Rectangle getArea() {
+		return area;
+	}
+	
 	public int getTAS(){
 		return tasCurrent;
 	}
@@ -119,6 +131,15 @@ public class Aircraft extends Entity{
 		if(isSelected){
 			Draw.history(g, history);
 			g2d.setColor(Color.yellow);
+			if(altCurrent != altDesired){
+				double ex = (loc.getX() + (getKPS()) * NMPP * (getTTC() * 12) * Math.sin(Math.toRadians(headingCurrent)) );
+				double ey = (loc.getY() - (getKPS()) * NMPP * (getTTC() * 12) * Math.cos(Math.toRadians(headingCurrent)) );
+				
+				
+				
+			//	Draw.centeredcircle(g, new Coords(ex,ey), 0.5*NMPP, Color.magenta);
+
+			}
 		}
 		else{
 			g2d.setColor(Color.green);
@@ -147,18 +168,7 @@ public class Aircraft extends Entity{
 	}
 	
 	public void setHeadingDesired(Coords coords){
-	    double angle = (double) Math.toDegrees(Math.atan2(coords.getY() - loc.getY(), coords.getX() - loc.getX()));
-
-	    if(angle < 0){
-	        angle += 360;
-	    }
-	    
-	    angle+=90;
-	    if(angle >=360)
-	    	angle -= 360;
-	    
-	    System.out.println("Desired Heading: " + (int)angle);
-	    this.headingDesired = (int)angle;
+		headingDesired = (int)Calc.angle(loc, coords);
 	}
 
 	public void setHeadingDesired(int hdg){
@@ -172,31 +182,48 @@ public class Aircraft extends Entity{
 	@Override
 	public void tick() {
 		move();
+		if(isClearILS){
+			for(int i = 0; i < Handler.getLocalizers().size(); i++){
+				if(Calc.lineIntcpt(direction, Handler.getLocalizers().elementAt(i).getLocPath())){
+					System.out.println(this + " with ILS status " + isClearILS + " crossing localizer " + Handler.getLocalizers().elementAt(i));
+				}
+			}
+		}
+		area.setBounds((int)(loc.getX() - 0.25 * NMPP), (int)(loc.getY() - 0.25 * NMPP), (int)((NMPP * 0.25) * 2),(int)((NMPP * 0.25) * 2) );
+		double ex = (loc.getX() + Game.WIDTH * Math.sin(Math.toRadians(headingCurrent)));
+		double ey = (loc.getY() - Game.WIDTH * Math.cos(Math.toRadians(headingCurrent)));
+		direction.setLine(loc.getX(), loc.getY(), ex, ey);
 	}
 	
 	private void altitude(){
 		if(altDesired > altCurrent){
-			if(altDesired - altCurrent >= 2.5){
-				climbCurrent = climbMax;
-			}
-			else{
-				climbCurrent = altDesired - altCurrent;
-			}
-		}
-		else if(altDesired < altCurrent){
-			if(altDesired - altCurrent <= -2.5){
-				climbCurrent = -climbMax;
-			}
-			else{
-				climbCurrent = altDesired - altCurrent;
+			if(altDesired - altCurrent > climbMax/12)
+				climbCurrent = climbMax/12;
+			else
+				climbCurrent = (altDesired - altCurrent)/12;
+			altCurrent += climbCurrent;
+			if(altDesired - altCurrent <= 0.1){
+				altCurrent = altDesired;
+				climbCurrent = 0;
 			}
 		}
 		else{
-			climbCurrent = 0;
+			if(altDesired - altCurrent < -(climbMax / 12))
+				climbCurrent = -(climbMax / 12);
+			else
+				climbCurrent = (altDesired - altCurrent)/12;
+			altCurrent += climbCurrent;
+			if(altDesired - altCurrent >= -0.1){
+				altCurrent = altDesired;
+				climbCurrent = 0;
+			}
 		}
-		altCurrent += getFPS();
-		if(altCurrent >= altDesired - 0.1 && altCurrent <= altDesired + 0.1)
-			altCurrent = altDesired;
+	}
+		
+	private double getTTC(){
+		double dist = Math.abs(altCurrent - altDesired);
+		double rate = Math.abs(climbCurrent);	// climb rate per sweep
+		return dist/(rate*12);
 	}
 
 	private void heading(){
@@ -237,11 +264,11 @@ public class Aircraft extends Entity{
 		loc.setX(ex);
 		loc.setY(ey);
 		distTraveled += getKPS();
-		if(distTraveled >= 0.25){
+		if(distTraveled >= 0.50){
 			Coords prev = new Coords(loc.getX(), loc.getY());
 			history.add(0, prev);
-			if(history.size() == 10)
-				history.remove(9);
+			if(history.size() == 20)
+				history.remove(19);
 			distTraveled = 0.0;
 		}
 	}
@@ -280,5 +307,7 @@ public class Aircraft extends Entity{
 		}
 		kiasCurrent += accelCur;
 	}
+
+
 
 }

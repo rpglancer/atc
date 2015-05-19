@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
 import atc.Game;
 import atc.type.TYPE;
@@ -49,7 +50,7 @@ public class Runway extends Entity{
 		g2d.setStroke(runway);		
 		
 		double ex = (loc.getX() + length * Math.sin(Math.toRadians(heading)));
-		double ey = (loc.getY() + length * Math.cos(Math.toRadians(heading)));
+		double ey = (loc.getY() - length * Math.cos(Math.toRadians(heading)));
 		
 		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
 		
@@ -64,14 +65,17 @@ public class Runway extends Entity{
 	public void setCoords(Coords coords){
 		loc.setX(coords.getX());
 		loc.setY(coords.getY());
-//		loc.x = coords.getX();
-//		loc.y = coords.getY();
 	}
 
 	@Override
 	public void tick() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public Rectangle getArea() {
+		return area;
 	}
 
 }
