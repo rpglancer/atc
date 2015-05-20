@@ -20,6 +20,7 @@ import atc.type.TYPE;
 
 public class Game extends Canvas implements Runnable{
 	public static final int sweepLength = 5;
+	public static final int sweepsPerMin = 60/sweepLength;
 	private static final long serialVersionUID = 6797603345816214805L;
 	public static final int WIDTH = 800;
 	public static final int HEIGHT = 480;
@@ -80,7 +81,7 @@ public class Game extends Canvas implements Runnable{
 		Airport airport = new Airport();
 		handler.add(airport);
 //		Aircraft aircraft = new Aircraft(256, 64, 180, 140, TYPE.AIRCRAFT_ARRIVE);
-		Aircraft aircraft = new Aircraft(256, 64, 180, 140, TYPE.AIRCRAFT);
+		Aircraft aircraft = new Aircraft(600, 300, 180, 140, TYPE.AIRCRAFT);
 		Hud hud = new Hud();
 		handler.add(aircraft);
 		handler.add(hud);

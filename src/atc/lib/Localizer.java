@@ -45,6 +45,10 @@ public class Localizer extends Entity{
 		return rwy;
 	}
 	
+	public int getHdg(){
+		return hdg;
+	}
+	
 	public void deselect(){
 		
 	}
