@@ -8,9 +8,10 @@ import atc.type.TYPE;
 
 public abstract class Entity {
 	/**
-	 * Nautical Miles Per Pixel
+	 * <b>P</b>ixels <b>P</b>er <b>N</b>autical <b>M</b>ile.
 	 */
-	public static double NMPP = Game.GAMEWIDTH / 60;
+	public static double PPNM = Game.GAMEWIDTH / 60;
+	//public static double NMPP = 60 / Game.GAMEWIDTH;
 	
 	protected boolean isSelected = false;
 	protected TYPE type;

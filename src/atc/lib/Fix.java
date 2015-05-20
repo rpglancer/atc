@@ -40,7 +40,7 @@ public class Fix extends Entity{
 		FontMetrics fm = g.getFontMetrics(Fonts.radarobj);
 		Rectangle rect = new Rectangle((int)loc.getX() - (int)(fm.stringWidth(Fonts.fix)/1.5), (int)loc.getY() - fm.getAscent()/2, fm.stringWidth(Fonts.fix), fm.getHeight());
 		g.setColor(Color.darkGray);
-		Draw.centeredcircle(g, loc, NMPP*1.5, Color.cyan);
+		Draw.centeredcircle(g, loc, PPNM*1.5, Color.cyan);
 		Text.boxText(g, Fonts.radarobj, rect, HALIGN.CENTER, VALIGN.MIDDLE, Fonts.fix);
 		g.setFont(prevF);
 		g.setColor(prevC);

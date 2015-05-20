@@ -22,8 +22,8 @@ public class Draw {
 		g.setColor(Color.cyan);
 		g.drawRect((int)airport.getCoords().getX() - (width / 2), (int)airport.getCoords().getY() - (height / 2), 5, 5);
 		
-		Draw.centeredcircle(g, airport.getCoords(), Airport.NMPP * 15, Color.darkGray);
-		Draw.centeredcircle(g, airport.getCoords(), Airport.NMPP * 30, Color.darkGray);
+		Draw.centeredcircle(g, airport.getCoords(), Airport.PPNM * 15, Color.darkGray);
+		Draw.centeredcircle(g, airport.getCoords(), Airport.PPNM * 30, Color.darkGray);
 		
 		g.setColor(prev);
 	}
@@ -113,7 +113,7 @@ public class Draw {
 			if(i%3 == 0)
 				g.setColor(g.getColor().darker());
 //			g2d.drawOval((int)x-2, (int)y-2, w, h);
-			centeredcircle(g, temp, Aircraft.NMPP * 0.125, g.getColor());
+			centeredcircle(g, temp, Aircraft.PPNM * 0.125, g.getColor());
 		}
 		g.setColor(prevC);
 		g.setFont(prevF);

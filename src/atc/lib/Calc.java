@@ -31,6 +31,18 @@ public class Calc {
 	}
 	
 	/**
+	 * Method to calculate the [rough] current glideslope of an aircraft.
+	 * @param aircraft	Aircraft of which the glideslope will be calculated
+	 * @param loc	Localizer the aircraft is using
+	 * @return	Angle of the glideslope as an integer.
+	 */
+	public static int glideSlope(Aircraft aircraft, Localizer loc){
+		double alt = aircraft.getAltCur();
+		double dist = distance(aircraft.getCoords(), loc.getCoords());
+		return (int)Math.toDegrees(Math.atan(alt/dist));
+	}
+	
+	/**
 	 * Method to calculate the distance between two coordinates in pixels.
 	 * @param src	Coordinate A
 	 * @param tgt	Coordinate B
@@ -53,7 +65,7 @@ public class Calc {
 		double a = src.getX() - tgt.getX();
 		double b = src.getY() - tgt.getY();
 		double c = (a * a) + (b * b);
-		return Math.sqrt(c * Aircraft.NMPP);
+		return Math.sqrt(c) / Aircraft.PPNM;
 	}
 	
 	/**

@@ -45,8 +45,8 @@ public class Aircraft extends Entity{
 	
 	public Aircraft(double x, double y, int hdg, int speed, TYPE type){
 		loc = new Coords(x,y);
-		area = new Rectangle((int)(loc.getX() - 0.25 * NMPP), (int)(loc.getY() - 0.25 * NMPP), (int)((NMPP * 0.25) * 2),(int)((NMPP * 0.25) * 2) );
-		altCurrent = 16;
+		area = new Rectangle((int)(loc.getX() - 0.25 * PPNM), (int)(loc.getY() - 0.25 * PPNM), (int)((PPNM * 0.25) * 2),(int)((PPNM * 0.25) * 2) );
+		altCurrent = 4;
 		altDesired = altCurrent;
 		headingCurrent = hdg;
 		headingDesired = headingCurrent;
@@ -131,18 +131,18 @@ public class Aircraft extends Entity{
 			Draw.history(g, history);
 			g2d.setColor(Color.yellow);
 			if(altCurrent != altDesired){
-				double ex = (loc.getX() + (getKPS()) * NMPP * (getTTC() * 12) * Math.sin(Math.toRadians(headingCurrent)) );
-				double ey = (loc.getY() - (getKPS()) * NMPP * (getTTC() * 12) * Math.cos(Math.toRadians(headingCurrent)) );	
-				Draw.centeredcircle(g, new Coords(ex,ey), 0.5*NMPP, Color.magenta);
+				double ex = (loc.getX() + (getKPS()) * PPNM * (getTTC() * 12) * Math.sin(Math.toRadians(headingCurrent)) );
+				double ey = (loc.getY() - (getKPS()) * PPNM * (getTTC() * 12) * Math.cos(Math.toRadians(headingCurrent)) );	
+				Draw.centeredcircle(g, new Coords(ex,ey), 0.5*PPNM, Color.magenta);
 			}
 		}
 		else{
 			g2d.setColor(Color.green);
 		}
-		Draw.centeredsquare(g, loc, NMPP * 0.25, g2d.getColor(), 2.0f);
-		Draw.centeredcircle(g, loc, 1*NMPP, Color.cyan);
-		double ex = (loc.getX() + (getKPS() * NMPP * 12) * Math.sin(Math.toRadians(headingCurrent)));
-		double ey = (loc.getY() - (getKPS() * NMPP * 12) * Math.cos(Math.toRadians(headingCurrent)));
+		Draw.centeredsquare(g, loc, PPNM * 0.25, g2d.getColor(), 2.0f);
+		Draw.centeredcircle(g, loc, 1*PPNM, Color.cyan);
+		double ex = (loc.getX() + (getKPS() * PPNM * 12) * Math.sin(Math.toRadians(headingCurrent)));
+		double ey = (loc.getY() - (getKPS() * PPNM * 12) * Math.cos(Math.toRadians(headingCurrent)));
 		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
 		g2d.setColor(prevC);
 		g2d.setFont(prevF);
@@ -178,7 +178,7 @@ public class Aircraft extends Entity{
 	public void tick() {
 
 		move();
-		area.setBounds((int)(loc.getX() - 0.25 * NMPP), (int)(loc.getY() - 0.25 * NMPP), (int)((NMPP * 0.25) * 2),(int)((NMPP * 0.25) * 2) );
+		area.setBounds((int)(loc.getX() - 0.25 * PPNM), (int)(loc.getY() - 0.25 * PPNM), (int)((PPNM * 0.25) * 2),(int)((PPNM * 0.25) * 2) );
 		double ex = (loc.getX() + Game.WIDTH * Math.sin(Math.toRadians(headingCurrent)));
 		double ey = (loc.getY() - Game.WIDTH * Math.cos(Math.toRadians(headingCurrent)));
 		direction.setLine(loc.getX(), loc.getY(), ex, ey);
@@ -189,7 +189,7 @@ public class Aircraft extends Entity{
 					Localizer l = Handler.getLocalizers().elementAt(i);
 					if(Calc.lineIntcpt(direction, l.getLocPath())){
 						Coords ci = Calc.intersection(direction, l.getLocPath());
-						if(Calc.distance(loc, ci) < 2 * NMPP){
+						if(Calc.distance(loc, ci) < 2 * PPNM){
 							local = l;
 							System.out.println("Found localizer " + local);
 							break;
@@ -207,8 +207,18 @@ public class Aircraft extends Entity{
 				}
 				double angle = Math.toDegrees(Calc.approachAngle(local.getCoords(), ci, loc));
 				if(angle >= 135){
-					System.out.println("Established on the localizer!");
-					flight = FLIGHT.FINAL;
+					// Check for altitude here.
+					Coords intcpt = Calc.intersection(direction, local.getLocPath());
+					if(intcpt == null)
+						return;
+					if(Calc.distanceNM(intcpt, local.getCoords()) >= 15 && altCurrent <= 4.0)
+						flight = FLIGHT.FINAL;
+					else if(Calc.distanceNM(intcpt, local.getCoords()) >= 11.25 && altCurrent <= 3.0)
+						flight = FLIGHT.FINAL;
+					else if(Calc.distance(intcpt, local.getCoords()) >= 7.5 && altCurrent <= 2.0)
+						flight = FLIGHT.FINAL;
+					if(flight == FLIGHT.FINAL)
+						System.out.println("Established on the localizer!");
 				}
 			}
 		}
@@ -270,7 +280,8 @@ public class Aircraft extends Entity{
 	}
 	
 	private void ilsAlt(){
-		
+		altDesired = Calc.distanceNM(loc, local.getCoords()) / 3.75;		//	TODO: Should use a var for 3.75 to have different glide paths...
+		altitude();
 	}
 	
 	private void ilsHdg(){
@@ -309,8 +320,8 @@ public class Aircraft extends Entity{
 			heading();
 			throttle();
 		}
-		double ex = (loc.getX() + (getKPS() * NMPP) * Math.sin(Math.toRadians(headingCurrent)));
-		double ey = (loc.getY() - (getKPS() * NMPP) * Math.cos(Math.toRadians(headingCurrent)));
+		double ex = (loc.getX() + (getKPS() * PPNM) * Math.sin(Math.toRadians(headingCurrent)));
+		double ey = (loc.getY() - (getKPS() * PPNM) * Math.cos(Math.toRadians(headingCurrent)));
 		loc.setX(ex);
 		loc.setY(ey);
 		distTraveled += getKPS();

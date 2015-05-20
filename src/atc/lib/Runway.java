@@ -19,7 +19,7 @@ public class Runway extends Entity{
 		loc = new Coords(x, y);
 		this.heading = heading;
 		this.type = type;
-		length = (int)(2.5 * Runway.NMPP);
+		length = (int)(2.5 * Runway.PPNM);
 		if(this.type == TYPE.RUNWAY_ARRIVE){
 			localizer = new Localizer(this);
 		}

@@ -11,6 +11,7 @@ import atc.display.Draw;
 import atc.type.TYPE;
 
 public class Localizer extends Entity{
+	private int glideslope;
 	private int hdg;
 	private Coords rwy;
 	private Coords inner;
@@ -25,19 +26,20 @@ public class Localizer extends Entity{
 		this.hdg = rwy.getHdg();
 		x = this.rwy.getX();
 		y = this.rwy.getY();
-		ex = this.rwy.getX() + (NMPP * 15) * Math.sin(Math.toRadians(Convert.reciprocal(this.hdg)));
-		ey = this.rwy.getY() - (NMPP * 15) * Math.cos(Math.toRadians(Convert.reciprocal(this.hdg)));
+		ex = this.rwy.getX() + (PPNM * 18) * Math.sin(Math.toRadians(Convert.reciprocal(this.hdg)));
+		ey = this.rwy.getY() - (PPNM * 18) * Math.cos(Math.toRadians(Convert.reciprocal(this.hdg)));
 		locpath = new Line2D.Double(x,y,ex,ey);
 		
-		x = (this.rwy.getX() + (NMPP*12) * Math.sin(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
-		y = (this.rwy.getY() - (NMPP*12) * Math.cos(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
+		x = (this.rwy.getX() + (PPNM*15) * Math.sin(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
+		y = (this.rwy.getY() - (PPNM*15) * Math.cos(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
 		this.outer = new Coords(x,y);
-		x = (this.rwy.getX() + (NMPP*8) * Math.sin(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
-		y = (this.rwy.getY() - (NMPP*8) * Math.cos(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
+		x = (this.rwy.getX() + (PPNM*11.25) * Math.sin(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
+		y = (this.rwy.getY() - (PPNM*11.25) * Math.cos(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
 		this.middle = new Coords(x,y);
-		x = (this.rwy.getX() + (NMPP*4) * Math.sin(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
-		y = (this.rwy.getY() - (NMPP*4) * Math.cos(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
+		x = (this.rwy.getX() + (PPNM*7.5) * Math.sin(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
+		y = (this.rwy.getY() - (PPNM*7.5) * Math.cos(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
 		this.inner = new Coords(x,y);
+		glideslope = (int)Math.toDegrees(Math.atan(4/15));
 		Game.registerWithHandler(this);
 	}
 	@Override
@@ -47,6 +49,10 @@ public class Localizer extends Entity{
 	
 	public int getHdg(){
 		return hdg;
+	}
+	
+	public int getGlideSlope(){
+		return glideslope;
 	}
 	
 	public void deselect(){
@@ -64,9 +70,9 @@ public class Localizer extends Entity{
 		g.setColor(Color.darkGray);
 		g2d.draw(locpath);
 		
-		Draw.centeredcircle(g, inner, 0.25 * NMPP, Color.cyan);
-		Draw.centeredcircle(g, middle, 0.25 * NMPP, Color.cyan);
-		Draw.centeredcircle(g, outer, 0.25 * NMPP, Color.cyan);
+		Draw.centeredcircle(g, inner, 0.25 * PPNM, Color.cyan);
+		Draw.centeredcircle(g, middle, 0.25 * PPNM, Color.cyan);
+		Draw.centeredcircle(g, outer, 0.25 * PPNM, Color.cyan);
 		
 		g.setColor(prevC);
 	}
