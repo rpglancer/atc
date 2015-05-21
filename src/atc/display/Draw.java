@@ -15,7 +15,6 @@ import atc.lib.Coords;
 
 public class Draw {
 
-	//public static void airport(Graphics g, int x, int y){
 	public static void airport(Graphics g, Airport airport){
 		int height = 4, width = 4;
 		Color prev = g.getColor();
@@ -98,7 +97,7 @@ public class Draw {
 		y+=fm.getAscent();
 		g.drawString(s, x, y);
 		y+=fm.getAscent();
-		g.drawString(a.getTAS() / 10 + " " + "INSTRUCT", x, y);
+		g.drawString(a.getTAS() / 10 + " " + a.getInstruction(), x, y);
 		
 		g.setColor(prevC);
 		g.setFont(prevF);
@@ -112,7 +111,6 @@ public class Draw {
 			Coords temp = history.elementAt(i);
 			if(i%3 == 0)
 				g.setColor(g.getColor().darker());
-//			g2d.drawOval((int)x-2, (int)y-2, w, h);
 			centeredcircle(g, temp, Aircraft.PPNM * 0.125, g.getColor());
 		}
 		g.setColor(prevC);

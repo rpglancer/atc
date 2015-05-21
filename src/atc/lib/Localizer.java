@@ -6,7 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 
-import atc.Game;
 import atc.display.Draw;
 import atc.type.TYPE;
 
@@ -19,11 +18,14 @@ public class Localizer extends Entity{
 	private Coords outer;
 	private Line2D locpath = null;
 	
+	private String locID = "";
+	
 	public Localizer(Runway rwy){
 		type = TYPE.LOCALIZER;
 		double x, y, ex, ey;
 		this.rwy = rwy.getCoords();
 		this.hdg = rwy.getHdg();
+		locID = "ILS" + hdg/10;
 		x = this.rwy.getX();
 		y = this.rwy.getY();
 		ex = this.rwy.getX() + (PPNM * 18) * Math.sin(Math.toRadians(Convert.reciprocal(this.hdg)));
@@ -40,7 +42,7 @@ public class Localizer extends Entity{
 		y = (this.rwy.getY() - (PPNM*7.5) * Math.cos(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
 		this.inner = new Coords(x,y);
 		glideslope = (int)Math.toDegrees(Math.atan(4/15));
-		Game.registerWithHandler(this);
+//		Game.registerWithHandler(this);
 	}
 	@Override
 	public Coords getCoords() {
@@ -57,6 +59,10 @@ public class Localizer extends Entity{
 	
 	public void deselect(){
 		
+	}
+	
+	public String getID(){
+		return locID;
 	}
 	
 	public Line2D getLocPath(){

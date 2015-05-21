@@ -86,6 +86,14 @@ public class Calc {
 		return angle;
 		}
 	
+	public static Coords relativeCoords(Coords src, int hdg, double dist){
+	//	X = xcircle + (r * sine(angle))
+	//	Y = ycircle + (r * cosine(angle))
+		double x = src.getX() + (dist * Math.sin(hdg));
+		double y = src.getY() - (dist * Math.cos(hdg));
+		return new Coords((int)x, (int)y);
+	}
+	
 	/**
 	 * Method to determine if two lines cross.
 	 * @param src	Line A

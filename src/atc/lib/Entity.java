@@ -18,6 +18,8 @@ public abstract class Entity {
 	protected Rectangle area = null;
 	protected Coords loc = null;
 	
+
+	public abstract Rectangle getArea();
 	/**
 	 * {@link Handler} depends upon this method for determining where things are. When extending
 	 * this class be absolutely <b><u>/certain/</u></b> that this method is implemented in
@@ -26,7 +28,6 @@ public abstract class Entity {
 	 * is because getCoords() is returning null. Guaranteed.
 	 * @return	The coordinates of this Entity.
 	 */
-	public abstract Rectangle getArea();
 	public abstract Coords getCoords();
 	public abstract void deselect();
 	public abstract void render(Graphics g);

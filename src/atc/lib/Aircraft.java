@@ -26,6 +26,7 @@ public class Aircraft extends Entity{
 	private int accelCur = 0;		//	Current acceleration
 	private int accelMax = 5;		//	Max acceleration
 	private int decelMax = -3;		//	Max deceleration
+	private int fixHeading;			//	Heading to fly once a fix is reached [if applicable]
 	private int headingCurrent;		//	Current heading
 	private int headingDesired;		//	Assigned [desired] heading
 	private int kiasCurrent;		//	Knots indicated air speed
@@ -34,16 +35,19 @@ public class Aircraft extends Entity{
 	private int turnRateCur = 0;	//	Current turn rate
 	private int turnRateMax;		//	Maximum turn rate
 
+	private Control atc;
 	private Fix toFix = null;		//	Fix destination
 	private Line2D direction;		//	Magical invisible line that extends in the direction the aircraft is flying.
 	private Localizer local = null;
 	private String airline;			//	Aircraft Operator
 	private String flightNumber;	//	Flight number
+	private String instruction;		//	Current instruction [if applicable]
 	private Vector<Coords> history = new Vector<Coords>();
 	
 	private FLIGHT flight;			//	Flight status
 	
-	public Aircraft(double x, double y, int hdg, int speed, TYPE type){
+	public Aircraft(double x, double y, int hdg, int speed, TYPE type, Control atc){
+		this.atc = atc;
 		loc = new Coords(x,y);
 		area = new Rectangle((int)(loc.getX() - 0.25 * PPNM), (int)(loc.getY() - 0.25 * PPNM), (int)((PPNM * 0.25) * 2),(int)((PPNM * 0.25) * 2) );
 		altCurrent = 4;
@@ -60,6 +64,7 @@ public class Aircraft extends Entity{
 		double ey = (loc.getY() - Game.WIDTH * Math.cos(Math.toRadians(headingCurrent)));
 		direction.setLine(loc.getX(), loc.getY(), ex, ey);
 		flight = FLIGHT.ARRIVAL;
+		instruction = "";
 	}
 
 	public void deselect(){
@@ -70,12 +75,20 @@ public class Aircraft extends Entity{
 		return loc;
 	}
 	
+	public FLIGHT getFlight(){
+		return flight;
+	}
+	
 	public int getHdgCur(){
 		return headingCurrent;
 	}
 	
 	public int getHdgDes(){
 		return headingDesired;
+	}
+	
+	public String getInstruction(){
+		return instruction;
 	}
 	
 	public int getKIAS(){
@@ -137,6 +150,7 @@ public class Aircraft extends Entity{
 			}
 		}
 		else{
+//			if(flight == FLIGHT.CRUISE) g2d.setColor(Color.darkGray);
 			g2d.setColor(Color.green);
 		}
 		Draw.centeredsquare(g, loc, PPNM * 0.25, g2d.getColor(), 2.0f);
@@ -170,6 +184,10 @@ public class Aircraft extends Entity{
 		headingDesired = hdg;
 	}
 	
+	public void setInstruction(String instruction){
+		this.instruction = instruction;
+	}
+	
 	public void setVelocityDesired(int kts){
 		kiasDesired = kts;
 	}
@@ -182,7 +200,7 @@ public class Aircraft extends Entity{
 		double ex = (loc.getX() + Game.WIDTH * Math.sin(Math.toRadians(headingCurrent)));
 		double ey = (loc.getY() - Game.WIDTH * Math.cos(Math.toRadians(headingCurrent)));
 		direction.setLine(loc.getX(), loc.getY(), ex, ey);
-
+/*
 		if(flight == FLIGHT.ARRIVAL){
 			if(isClearILS && local == null){
 				for(int i = 0; i < Handler.getLocalizers().size(); i++){
@@ -192,6 +210,7 @@ public class Aircraft extends Entity{
 						if(Calc.distance(loc, ci) < 2 * PPNM){
 							local = l;
 							System.out.println("Found localizer " + local);
+							setInstruction(local.getID());
 							break;
 						}
 					}
@@ -202,26 +221,28 @@ public class Aircraft extends Entity{
 				if(ci == null){
 					local = null;
 					System.out.println("Lost the localizer!");
+					setInstruction("");
 					flight = FLIGHT.ARRIVAL;
 					return;
 				}
 				double angle = Math.toDegrees(Calc.approachAngle(local.getCoords(), ci, loc));
-				if(angle >= 135){
+				if(angle >= 135 && Calc.distanceNM(loc, ci) <= 0.5){		// 0.5 might be too finnicky.
 					// Check for altitude here.
 					Coords intcpt = Calc.intersection(direction, local.getLocPath());
 					if(intcpt == null)
 						return;
 					if(Calc.distanceNM(intcpt, local.getCoords()) >= 15 && altCurrent <= 4.0)
-						flight = FLIGHT.FINAL;
+						flight = FLIGHT.ILS;
 					else if(Calc.distanceNM(intcpt, local.getCoords()) >= 11.25 && altCurrent <= 3.0)
-						flight = FLIGHT.FINAL;
+						flight = FLIGHT.ILS;
 					else if(Calc.distance(intcpt, local.getCoords()) >= 7.5 && altCurrent <= 2.0)
-						flight = FLIGHT.FINAL;
-					if(flight == FLIGHT.FINAL)
+						flight = FLIGHT.ILS;
+					if(flight == FLIGHT.ILS)
 						System.out.println("Established on the localizer!");
 				}
 			}
 		}
+		*/
 	}
 	
 	private void altitude(){
@@ -244,7 +265,49 @@ public class Aircraft extends Entity{
 			}
 		}	
 	}
-		
+
+	private void chkILS(){
+		if(local == null){
+			for(int i = 0; i < Handler.getLocalizers().size(); i++){
+				Localizer l = Handler.getLocalizers().elementAt(i);
+				if(Calc.lineIntcpt(direction, l.getLocPath())){
+					Coords ci = Calc.intersection(direction, l.getLocPath());
+					if(Calc.distance(loc, ci) < 2 * PPNM){
+						local = l;
+						System.out.println("Found localizer " + local);
+						setInstruction(local.getID());
+						break;
+					}
+				}
+			}
+		}
+		if(local != null){
+			Coords ci = Calc.intersection(direction, local.getLocPath());
+			if(ci == null){
+				local = null;
+				System.out.println("Lost the localizer!");
+				setInstruction("");
+				flight = FLIGHT.ARRIVAL;
+				return;
+			}
+			double angle = Math.toDegrees(Calc.approachAngle(local.getCoords(), ci, loc));
+			if(angle >= 135 && Calc.distanceNM(loc, ci) <= 0.5){		// 0.5 might be too finnicky.
+				// Check for altitude here.
+				Coords intcpt = Calc.intersection(direction, local.getLocPath());
+				if(intcpt == null)
+					return;
+				if(Calc.distanceNM(intcpt, local.getCoords()) >= 15 && altCurrent <= 4.0)
+					flight = FLIGHT.ILS;
+				else if(Calc.distanceNM(intcpt, local.getCoords()) >= 11.25 && altCurrent <= 3.0)
+					flight = FLIGHT.ILS;
+				else if(Calc.distance(intcpt, local.getCoords()) >= 7.5 && altCurrent <= 2.0)
+					flight = FLIGHT.ILS;
+				if(flight == FLIGHT.ILS)
+					System.out.println("Established on the localizer!");
+			}
+		}
+	}
+	
 	private double getTTC(){
 		double dist = Math.abs(altCurrent - altDesired);
 		double rate = Math.abs(climbCurrent);	// climb rate per sweep
@@ -280,7 +343,8 @@ public class Aircraft extends Entity{
 	}
 	
 	private void ilsAlt(){
-		altDesired = Calc.distanceNM(loc, local.getCoords()) / 3.75;		//	TODO: Should use a var for 3.75 to have different glide paths...
+		if(altCurrent > Calc.distanceNM(loc, local.getCoords()) / 3.75)
+			altDesired = Calc.distanceNM(loc, local.getCoords()) / 3.75;		//	TODO: Should use a var for 3.75 to have different glide paths...
 		altitude();
 	}
 	
@@ -310,10 +374,29 @@ public class Aircraft extends Entity{
 	}
 	
 	private void move(){
-		if(flight == FLIGHT.FINAL){
+		if(isClearILS && flight == FLIGHT.ARRIVAL){
+			chkILS();
+		}
+		if(flight == FLIGHT.ILS){
 			ilsAlt();
 			ilsHdg();
 			ilsSpd();
+			if(altCurrent < 0.1){
+				flight = FLIGHT.LANDING;
+			}
+		}
+		else if(flight == FLIGHT.LANDING){
+			headingCurrent = local.getHdg();
+			kiasDesired = 0;
+			altDesired = 0;
+			altitude();
+			throttle();
+	//		System.out.println("KIAS :" + kiasCurrent);
+			if(kiasCurrent < 10){
+				// Notify ATC of landing
+				
+				Game.finalizeWithHandler(this);
+			}
 		}
 		else{
 			altitude();
@@ -360,7 +443,7 @@ public class Aircraft extends Entity{
 				accelCur = decelMax;
 			}
 			else{
-				accelCur = kiasCurrent - kiasDesired;
+				accelCur = kiasDesired - kiasCurrent;
 			}
 		}
 		else{

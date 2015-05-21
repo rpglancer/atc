@@ -4,9 +4,10 @@ import java.awt.Graphics;
 import java.util.LinkedList;
 import java.util.Vector;
 
+import atc.type.FLIGHT;
 import atc.type.TYPE;
 /**
- * Manages the additions, removals, retrievals ticks and renderings of all Entities in the Game.
+ * Manages the additions, removals, retrievals, ticks and renderings of all Entities in the Game.
  * @author Matt Bangert
  *
  */
@@ -60,12 +61,22 @@ public class Handler {
 			if(entity.getCoords() == null || entity.getArea() == null)
 				continue;
 			else{
-				if(coords.getX() >= entity.getArea().getMinX() && coords.getX() <= entity.getArea().getMaxX() &&
-						coords.getY() >= entity.getArea().getMinY() && coords.getY() <= entity.getArea().getMaxY()){
-					entity.select();
-					getHud().select((Aircraft) entity);
-					return entity;
+				switch(entity.type){
+				case AIRCRAFT:		
+					if(coords.getX() >= entity.getArea().getMinX() && coords.getX() <= entity.getArea().getMaxX() &&
+					coords.getY() >= entity.getArea().getMinY() && coords.getY() <= entity.getArea().getMaxY()){
+						Aircraft temp = (Aircraft)entity;
+						if(temp.getFlight() == FLIGHT.ARRIVAL){
+							entity.select();
+							getHud().select((Aircraft) entity);
+							return entity;
+						}
+					}
+					
+				default:
+					continue;			
 				}
+
 			}
 		}
 		if(entity != null)
