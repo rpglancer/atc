@@ -7,12 +7,14 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 
+import atc.Game;
 import atc.type.TYPE;
 
 public class Runway extends Entity{
 	private Line2D departPath = null;
 	private Line2D runwayPath = null;
 	private Localizer localizer;
+	private boolean isOpen = false;
 	private double heading;
 	private int length;					// Kind of redundant now that Runway has Line2D for the runway itself.
 	TYPE type;
@@ -48,6 +50,10 @@ public class Runway extends Entity{
 		return loc;
 	}
 	
+	public boolean isOpen(){
+		return isOpen;
+	}
+	
 	public Line2D getDepartPath(){
 		return departPath;
 	}
@@ -62,6 +68,20 @@ public class Runway extends Entity{
 	
 	public Line2D getRunwayPath(){
 		return runwayPath;
+	}
+	
+	public void close(){
+		isOpen = false;
+		if(type == TYPE.RUNWAY_ARRIVE)
+			Game.finalizeWithHandler(localizer);
+		Game.finalizeWithHandler(this);
+	}
+	
+	public void open(){
+		isOpen = true;
+		Game.registerWithHandler(this);
+		if(type == TYPE.RUNWAY_ARRIVE)
+			Game.registerWithHandler(localizer);
 	}
 	
 	@Override

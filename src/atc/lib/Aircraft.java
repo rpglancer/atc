@@ -15,39 +15,39 @@ import atc.type.TYPE;
 
 public class Aircraft extends Entity{
 	
-	private Boolean isConflict = false;
-	private Boolean isClearILS = true;
-	private double altCurrent;		//	Current altitude
-	private double altDesired;		//	Assigned [desired] altitude
-	private double climbCurrent = 0;//	Current climb rate
-	private double climbMax = 2.5;	//	Max climb rate in thousands [Feet:Minute]
+	private Boolean isConflict = false;	//	Aircraft separation requirements are below threshold
+	private Boolean isCrashing = false;	//	Aircraft has collided with another aircraft
+	private Boolean isClearILS = true;	//	Aircraft has been cleared for ILS[landing]
+	private double altCurrent;			//	Current altitude
+	private double altDesired;			//	Assigned [desired] altitude
+	private double climbCurrent = 0;	//	Current climb rate
+	private double climbMax = 2.5;		//	Max climb rate in thousands [Feet:Minute]
 	private double distTraveled = 0.0;
 	
-	private int accelCur = 0;		//	Current acceleration
-	private int accelMax = 5;		//	Max acceleration
-	private int decelMax = -3;		//	Max deceleration
-	private int fixHeading;			//	Heading to fly once a fix is reached [if applicable]
-	private int headingCurrent;		//	Current heading
-	private int headingDesired;		//	Assigned [desired] heading
-	private int kiasCurrent;		//	Knots indicated air speed
-	private int kiasDesired;		//	Knots indicated air speed
-	private int tasCurrent;			//	Knots ground [true air speed]
-	private int turnRateCur = 0;	//	Current turn rate
-	private int turnRateMax;		//	Maximum turn rate
+	private int accelCur = 0;			//	Current acceleration
+	private int accelMax = 5;			//	Max acceleration
+	private int decelMax = -3;			//	Max deceleration
+	private int fixHeading;				//	Heading to fly once a fix is reached [if applicable]
+	private int headingCurrent;			//	Current heading
+	private int headingDesired;			//	Assigned [desired] heading
+	private int kiasCurrent;			//	Knots indicated air speed
+	private int kiasDesired;			//	Knots indicated air speed
+	private int tasCurrent;				//	Knots ground [true air speed]
+	private int turnRateCur = 0;		//	Current turn rate
+	private int turnRateMax;			//	Maximum turn rate
 
-	private Control atc;
-	private Fix toFix = null;		//	Fix destination
-	private Line2D direction;		//	Magical invisible line that extends in the direction the aircraft is flying.
-	private Localizer local = null;
-	private String airline;			//	Aircraft Operator
-	private String flightNumber;	//	Flight number
-	private String instruction;		//	Current instruction [if applicable]
-	private Vector<Coords> history = new Vector<Coords>();
+	private Fix toFix = null;			//	Fix destination
+	private Line2D direction;			//	Magical invisible line that extends in the direction the aircraft is flying.
+	private Localizer local = null;		//	Localizer the aircraft is using for landing.
+	private String airline;				//	Aircraft Operator
+	private String model;				//	Model of aircraft
+	private String flightNumber;		//	Flight number
+	private String instruction;			//	Current instruction [if applicable]
+	private Vector<Coords> history = new Vector<Coords>();	//	Flight history coordinates
 	
 	private FLIGHT flight;			//	Flight status
 	
-	public Aircraft(double x, double y, int hdg, int speed, TYPE type, Control atc){
-		this.atc = atc;
+	public Aircraft(double x, double y, int hdg, int speed, TYPE type){	//, Airport atc){
 		loc = new Coords(x,y);
 		area = new Rectangle((int)(loc.getX() - 0.25 * PPNM), (int)(loc.getY() - 0.25 * PPNM), (int)((PPNM * 0.25) * 2),(int)((PPNM * 0.25) * 2) );
 		altCurrent = 4;
@@ -131,6 +131,18 @@ public class Aircraft extends Entity{
 		return area;
 	}
 	
+	public String getFlightNo(){
+		return flightNumber;
+	}
+	
+	public String getModel(){
+		return model;
+	}
+	
+	public String getName(){
+		return airline+flightNumber;
+	}
+	
 	public int getTAS(){
 		return tasCurrent;
 	}
@@ -174,6 +186,12 @@ public class Aircraft extends Entity{
 	public void setCoords(Coords coords){
 		loc.setX(coords.getX());
 		loc.setY(coords.getY());
+	}
+	
+	public void setFlightInfo(String oper, String number, String model){
+		airline = oper;
+		flightNumber = number;
+		this.model = model;
 	}
 	
 	public void setHeadingDesired(Coords coords){
@@ -268,6 +286,9 @@ public class Aircraft extends Entity{
 
 	private void chkILS(){
 		if(local == null){
+			
+			
+			//orig
 			for(int i = 0; i < Handler.getLocalizers().size(); i++){
 				Localizer l = Handler.getLocalizers().elementAt(i);
 				if(Calc.lineIntcpt(direction, l.getLocPath())){
@@ -302,8 +323,10 @@ public class Aircraft extends Entity{
 					flight = FLIGHT.ILS;
 				else if(Calc.distance(intcpt, local.getCoords()) >= 7.5 && altCurrent <= 2.0)
 					flight = FLIGHT.ILS;
-				if(flight == FLIGHT.ILS)
+				if(flight == FLIGHT.ILS){
 					System.out.println("Established on the localizer!");
+				}
+					
 			}
 		}
 	}
@@ -392,11 +415,11 @@ public class Aircraft extends Entity{
 			altitude();
 			throttle();
 	//		System.out.println("KIAS :" + kiasCurrent);
-			if(kiasCurrent < 10){
+	//		if(kiasCurrent < 10){
 				// Notify ATC of landing
-				
-				Game.finalizeWithHandler(this);
-			}
+	//			
+	//			Game.finalizeWithHandler(this);
+	//		}
 		}
 		else{
 			altitude();
@@ -449,7 +472,13 @@ public class Aircraft extends Entity{
 		else{
 			accelCur = 0;
 		}
+		if(flight == FLIGHT.LANDING){
+			if(altCurrent == 0)
+				accelCur = -15;
+		}
 		kiasCurrent += accelCur;
+		if(kiasCurrent < 0)
+			kiasCurrent = 0;
 	}
 
 

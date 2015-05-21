@@ -83,8 +83,8 @@ public class Game extends Canvas implements Runnable{
 		Hud hud = new Hud();
 //		handler.add(aircraft);
 		handler.add(hud);
-		Fix fix = new Fix(new Coords(620, 330));
-		handler.add(fix);
+//		Fix fix = new Fix(new Coords(620, 330));
+//		handler.add(fix);
 	}
 	
 	private void render(){
@@ -120,7 +120,6 @@ public class Game extends Canvas implements Runnable{
 			lastTime = now;
 			if(delta >= 1){
 				tick();
-//				render();		// Tick Limited FPS
 				delta--;
 			}
 			if(System.currentTimeMillis() - timer > 1000){
@@ -137,8 +136,5 @@ public class Game extends Canvas implements Runnable{
 	public static void registerWithHandler(Entity entity){
 		handler.add(entity);
 	}
-//	public static Vector<Localizer> getLocalizers(){
-//		return handler.getLocalizers();
-//	}
 	
 }

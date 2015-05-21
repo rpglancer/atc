@@ -91,9 +91,9 @@ public class Draw {
 		else
 			g.setColor(Color.green);
 
-		int x = (int)a.getCoords().getX() + 5;
-		int y = (int)a.getCoords().getY() + 5;
-		g.drawString("FLIGHT", x, y);
+		int x = (int)a.getCoords().getX() + (int)(1*Aircraft.PPNM);
+		int y = (int)a.getCoords().getY() + (int)(1*Aircraft.PPNM);
+		g.drawString(a.getName(), x, y);
 		y+=fm.getAscent();
 		g.drawString(s, x, y);
 		y+=fm.getAscent();

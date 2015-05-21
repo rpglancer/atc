@@ -97,8 +97,7 @@ public class Hud extends Entity{
 			else if(mouseX >= confirm.getMinX() && mouseX <= confirm.getMaxX()
 					&& mouseY >= confirm.getMinX() && mouseY <= confirm.getMaxY()){
 				apply();
-			}
-			
+			}		
 		}
 	}
 
@@ -152,9 +151,6 @@ public class Hud extends Entity{
 			selectedSpeed = a.getKIASDes();
 			selectedAlt = a.getAltDes();
 			selectedHdg = a.getHdgDes();
-//			selectedSpeed = a.getKIAS();
-//			selectedAlt = a.getAltCur();
-//			selectedHdg = a.getHdgCur();
 			isSelected = true;
 		}
 	}
@@ -167,11 +163,15 @@ public class Hud extends Entity{
 
 	@Override
 	public void tick() {
-//		if(isSelected && aircraft != null){
-//			selectedAlt = aircraft.getAltDes();
-//			selectedSpeed = aircraft.getKIASDes();
-//			selectedHdg = aircraft.getHdgDes();
-//		}
+		if(isSelected && !aircraft.isSelected)
+			deselect();
+		if(isSelected && aircraft == null)
+			deselect();
+		if(isSelected && aircraft.isSelected){
+			if(selectedHdg != aircraft.getHdgDes()){
+				selectedHdg = aircraft.getHdgDes();
+			}
+		}
 	}
 
 	@Override

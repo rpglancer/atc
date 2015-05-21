@@ -10,6 +10,27 @@ import atc.type.HALIGN;
 import atc.type.VALIGN;
 
 public class Text {
+	
+	public static String[] airNames = {
+		"AAL", "DAL", "KLM", "UAL", "SWA",
+		"BAW", "KOR", "JAL", "AFR", "LFT"
+	};
+	
+	public static String[] airTypes = {
+		"b727", "b737", "b747", "b757", "b777",
+		"b787", "a320", "a330", "a340", "a350",
+		"a380"
+	};
+	
+	public static String[] fixNames = {
+		"ARCEN", "BOLDR", "CELES", "DWAYN", "EGRES",
+		"FLYTE", "GRADI", "HELPR", "IGNIS", "JOLLY",
+		"KORDO", "LEAFY", "MENLO", "NOBLE", "OTUMA",
+		"PLUTO", "QWERT", "ROBST", "SHIGY", "TAHOE",
+		"UMBER", "VIOLA", "WAXXY", "XERXE", "YESSM",
+		"ZILCH"
+		};
+	
 	private static void alignText(Graphics g, Font f, int x, int y, int w, int h, HALIGN ha, String text){
 		FontMetrics fm = g.getFontMetrics(f);
 		int strlen = fm.stringWidth(text);
