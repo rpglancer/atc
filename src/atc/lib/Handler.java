@@ -66,7 +66,8 @@ public class Handler {
 					if(coords.getX() >= entity.getArea().getMinX() && coords.getX() <= entity.getArea().getMaxX() &&
 					coords.getY() >= entity.getArea().getMinY() && coords.getY() <= entity.getArea().getMaxY()){
 						Aircraft temp = (Aircraft)entity;
-						if(temp.getFlight() == FLIGHT.ARRIVAL){
+						if(temp.getFlight() == FLIGHT.ARRIVAL || temp.getFlight() == FLIGHT.HANDOFF_AR || 
+								temp.getFlight() == FLIGHT.HANDOFF_DE || temp.getFlight() == FLIGHT.DEPARTURE){
 							entity.select();
 							getHud().select((Aircraft) entity);
 							return entity;

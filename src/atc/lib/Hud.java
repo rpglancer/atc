@@ -11,12 +11,12 @@ import atc.Game;
 import atc.display.Draw;
 import atc.display.Fonts;
 import atc.display.Text;
+import atc.type.FLIGHT;
 import atc.type.HALIGN;
 import atc.type.TYPE;
 import atc.type.VALIGN;
 
 public class Hud extends Entity{
-	private Aircraft aircraft = null;
 	
 	private static final int btnHeight = 32;
 	private static final int btnWidth = 32;
@@ -29,9 +29,11 @@ public class Hud extends Entity{
 	private int selectedHdg;
 	private double selectedAlt;
 	
-	private Rectangle altBox = new Rectangle(0 + (atc.Game.HUDWIDTH / 2) - (boxWidth/2), 32, boxWidth, boxHeight);
-	private Rectangle spdBox = new Rectangle(0 + (atc.Game.HUDWIDTH / 2) - (boxWidth/2), 80, boxWidth, boxHeight);
-	private Rectangle hdgBox = new Rectangle(0 + (atc.Game.HUDWIDTH / 2) - (boxWidth/2), 128, boxWidth, boxHeight);
+	private Aircraft aircraft = null;
+	
+	private Rectangle altBox = new Rectangle(0 + (atc.Game.HUDWIDTH / 2) - (boxWidth/2), btnHeight/2, boxWidth, boxHeight);
+	private Rectangle spdBox = new Rectangle(0 + (atc.Game.HUDWIDTH / 2) - (boxWidth/2), (int)altBox.getMaxY() + 16, boxWidth, boxHeight);
+	private Rectangle hdgBox = new Rectangle(0 + (atc.Game.HUDWIDTH / 2) - (boxWidth/2), (int)spdBox.getMaxY() + 16, boxWidth, boxHeight);
 	
 	private Rectangle incAlt = new Rectangle((int)(altBox.getX() + altBox.getWidth() + 8), (int)altBox.getY(), btnWidth, btnHeight);
 	private Rectangle incSpd = new Rectangle((int)(spdBox.getX() + spdBox.getWidth() + 8), (int)spdBox.getY(), btnWidth, btnHeight);;
@@ -41,7 +43,15 @@ public class Hud extends Entity{
 	private Rectangle decSpd = new Rectangle((int)spdBox.getX() - 40, (int)spdBox.getY(), btnWidth, btnHeight);
 	private Rectangle decHdg = new Rectangle((int)hdgBox.getX() - 40, (int)hdgBox.getY(), btnWidth, btnHeight);
 	
-	private Rectangle confirm = new Rectangle((int)altBox.getX() - 40, Game.HUDHEIGHT - 64, 64, 32);
+	private Rectangle selILS =	new Rectangle((int)altBox.getX() - 40, (int)hdgBox.getMaxY() + 16, 64, 32);
+	private Rectangle selHld =	new Rectangle((int)selILS.getMaxX() + 16, (int)hdgBox.getMaxY() + 16, 64, 32);
+	private Rectangle confirm =	new Rectangle((int)altBox.getX() - 40, (int)selILS.getMaxY() + 16, 64, 32);
+	private Rectangle cancel =	new Rectangle((int)confirm.getMaxX() + 16, (int)selILS.getMaxY() + 16, 64, 32);
+	
+	private Rectangle hndoff =	new Rectangle(24, Game.HUDHEIGHT / 2 - boxHeight / 2, Game.HUDWIDTH - 48, boxHeight);
+	
+//	private Rectangle confirm = new Rectangle((int)altBox.getX() - 40, (int)hdgBox.getMaxY() + 16, 64, 32);
+//	private Rectangle cancel  = new Rectangle(Game.HUDWIDTH / 2 + 8, (int)hdgBox.getMaxY() + 16, 64, 32);
 
 	
 	public Hud(){
@@ -70,34 +80,55 @@ public class Hud extends Entity{
 		int mouseX = arg0.getX();
 		int mouseY = arg0.getY();
 		if(isSelected){
-			if(mouseX >= decAlt.getMinX() && mouseX <= decAlt.getMaxX() 
-					&& mouseY >= decAlt.getMinY() && mouseY <= decAlt.getMaxY()){
-				adjAlt(-0.5);
+			if(aircraft.getFlight() == FLIGHT.ARRIVAL){
+				if(mouseX >= decAlt.getMinX() && mouseX <= decAlt.getMaxX() 
+						&& mouseY >= decAlt.getMinY() && mouseY <= decAlt.getMaxY()){
+					adjAlt(-0.5);
+				}
+				else if(mouseX >= incAlt.getMinX() && mouseX <= incAlt.getMaxX() 
+						&& mouseY >= incAlt.getMinY() && mouseY <= incAlt.getMaxY()){
+					adjAlt(0.5);
+				}
+				else if(mouseX >= decSpd.getMinX() && mouseX <= decSpd.getMaxX() 
+						&& mouseY >= decSpd.getMinY() && mouseY <= decSpd.getMaxY()){
+					adjSpd(-10);
+				}
+				else if(mouseX >= incSpd.getMinX() && mouseX <= incSpd.getMaxX() 
+						&& mouseY >= incSpd.getMinY() && mouseY <= incSpd.getMaxY()){
+					adjSpd(10);
+				}
+				else if(mouseX >= decHdg.getMinX() && mouseX <= decHdg.getMaxX() 
+						&& mouseY >= decHdg.getMinY() && mouseY <= decHdg.getMaxY()){
+					adjHdg(-5);
+				}
+				else if(mouseX >= incHdg.getMinX() && mouseX <= incHdg.getMaxX() 
+						&& mouseY >= incHdg.getMinY() && mouseY <= incHdg.getMaxY()){
+					adjHdg(5);
+				}
+				else if(mouseX >= selILS.getMinX() && mouseX <= selILS.getMaxX()
+						&& mouseY >= selILS.getMinY() && mouseY <= selILS.getMaxY()){
+					aircraft.toggleILS();
+				}
+				else if(mouseX >= selHld.getMinX() && mouseX <= selHld.getMaxX()
+						&& mouseY >= selHld.getMinY() && mouseY <= selHld.getMaxY()){
+					aircraft.toggleHold();
+				}
+				else if(mouseX >= confirm.getMinX() && mouseX <= confirm.getMaxX()
+						&& mouseY >= confirm.getMinX() && mouseY <= confirm.getMaxY()){
+					apply();
+				}
+				else if(mouseX >= cancel.getMinX() && mouseX <= cancel.getMaxX()
+						&& mouseY >= cancel.getMinY() && mouseY <= cancel.getMaxY()){
+					deselect();
+				}
 			}
-			else if(mouseX >= incAlt.getMinX() && mouseX <= incAlt.getMaxX() 
-					&& mouseY >= incAlt.getMinY() && mouseY <= incAlt.getMaxY()){
-				adjAlt(0.5);
+			
+			else if(aircraft.getFlight() == FLIGHT.HANDOFF_AR || aircraft.getFlight() == FLIGHT.HANDOFF_DE){
+				if(mouseX >= hndoff.getMinX() && mouseX <= hndoff.getMaxX()
+					&& mouseY >= hndoff.getMinY() && mouseY <= hndoff.getMaxY()){
+						aircraft.contact();
+					}
 			}
-			else if(mouseX >= decSpd.getMinX() && mouseX <= decSpd.getMaxX() 
-					&& mouseY >= decSpd.getMinY() && mouseY <= decSpd.getMaxY()){
-				adjSpd(-10);
-			}
-			else if(mouseX >= incSpd.getMinX() && mouseX <= incSpd.getMaxX() 
-					&& mouseY >= incSpd.getMinY() && mouseY <= incSpd.getMaxY()){
-				adjSpd(10);
-			}
-			else if(mouseX >= decHdg.getMinX() && mouseX <= decHdg.getMaxX() 
-					&& mouseY >= decHdg.getMinY() && mouseY <= decHdg.getMaxY()){
-				adjHdg(-1);
-			}
-			else if(mouseX >= incHdg.getMinX() && mouseX <= incHdg.getMaxX() 
-					&& mouseY >= incHdg.getMinY() && mouseY <= incHdg.getMaxY()){
-				adjHdg(1);
-			}
-			else if(mouseX >= confirm.getMinX() && mouseX <= confirm.getMaxX()
-					&& mouseY >= confirm.getMinX() && mouseY <= confirm.getMaxY()){
-				apply();
-			}		
 		}
 	}
 
@@ -110,6 +141,17 @@ public class Hud extends Entity{
 		
 		if(isSelected){
 			Draw.box(g, rect, 2, Color.green, Color.black);
+			
+			if(aircraft.getFlight() == FLIGHT.HANDOFF_AR || aircraft.getFlight() == FLIGHT.HANDOFF_DE){
+				Draw.box(g, hndoff, 2, Color.pink, Color.black);
+				g.setColor(Color.green);
+				Text.boxText(g, Fonts.hudNumber, hndoff, HALIGN.CENTER, VALIGN.MIDDLE, "CONTACT");
+				Draw.box(g, cancel, 2, Color.green, Color.black);
+				g.setColor(Color.green);
+				Text.boxText(g, Fonts.hudNumber, cancel, HALIGN.CENTER, VALIGN.MIDDLE, "X");
+				return;
+			}
+			
 			g2d.setColor(Color.cyan);
 			g2d.setFont(Fonts.hudNumber);
 			
@@ -134,8 +176,44 @@ public class Hud extends Entity{
 			Draw.box(g, incHdg, 2, Color.green, Color.black);
 			Text.boxText(g, Fonts.hudNumber, incHdg, HALIGN.CENTER, VALIGN.MIDDLE, "^");
 			
+			if(aircraft.getFlight() == FLIGHT.DEPARTURE){
+				Draw.box(g, selILS, 2, Color.red, Color.darkGray);
+				Text.boxText(g, Fonts.hudNumber, selILS, HALIGN.CENTER, VALIGN.MIDDLE, "ILS");
+				
+				Draw.box(g, selHld, 2, Color.red, Color.darkGray);
+				Text.boxText(g, Fonts.hudNumber, selHld, HALIGN.CENTER, VALIGN.MIDDLE, "HOLD");
+			}
+			
+			if(aircraft.getFlight() == FLIGHT.ARRIVAL){
+				if(aircraft.isClearILS()){
+					Draw.box(g, selILS, 2, Color.green, Color.green);
+					g.setColor(Color.black);
+					Text.boxText(g, Fonts.hudNumber, selILS, HALIGN.CENTER, VALIGN.MIDDLE, "ILS");
+					g.setColor(Color.cyan);
+				}
+				else{
+					Draw.box(g, selILS, 2, Color.green, Color.black);
+					Text.boxText(g, Fonts.hudNumber, selILS, HALIGN.CENTER, VALIGN.MIDDLE, "ILS");
+				}
+				if(aircraft.isHolding()){
+					Draw.box(g, selHld, 2, Color.green, Color.green);
+					g.setColor(Color.black);
+					Text.boxText(g, Fonts.hudNumber, selHld, HALIGN.CENTER, VALIGN.MIDDLE, "HOLD");
+					g.setColor(Color.cyan);
+				}
+				else{
+					Draw.box(g, selHld, 2, Color.green, Color.black);
+					Text.boxText(g, Fonts.hudNumber, selHld, HALIGN.CENTER, VALIGN.MIDDLE, "HOLD");
+				}
+			}
+			
 			Draw.box(g, confirm, 2, Color.green, Color.black);
 			Text.boxText(g, Fonts.hudNumber, confirm, HALIGN.CENTER, VALIGN.MIDDLE, "OK");
+			
+			Draw.box(g, cancel, 2, Color.green, Color.black);
+			Text.boxText(g, Fonts.hudNumber, cancel, HALIGN.CENTER, VALIGN.MIDDLE, "X");
+			
+
 			
 		}
 		else{

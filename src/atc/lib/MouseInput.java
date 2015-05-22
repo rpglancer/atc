@@ -9,11 +9,11 @@ import atc.type.TYPE;
 
 public class MouseInput implements MouseMotionListener, MouseListener{
 	private Entity ent = null;
-	private Game game;
+//	private Game game;
 	private Handler handler;
 
 	public MouseInput(Game game, Handler handler){
-		this.game = game;
+//		this.game = game;
 		this.handler = handler;
 	};
 	@Override

@@ -25,7 +25,7 @@ public class Runway extends Entity{
 		this.type = type;
 		length = (int)(2.5 * Runway.PPNM);
 		
-		//	calculate the runway
+		//	calculate the path of the runway
 		double ex = loc.getX() + (length) * Math.sin(Math.toRadians(this.heading));
 		double ey = loc.getY() - (length) * Math.cos(Math.toRadians(this.heading));
 		runwayPath = new Line2D.Double(loc.getX(), loc.getY(), ex, ey);
@@ -39,7 +39,6 @@ public class Runway extends Entity{
 			ey = loc.getY() - (PPNM * 8) * Math.cos(Math.toRadians(this.heading));
 			departPath = new Line2D.Double(loc.getX(),loc.getY(),ex,ey);
 		}
-//		Game.registerWithHandler(this);
 	}
 	
 	public void deselect(){
@@ -117,7 +116,6 @@ public class Runway extends Entity{
 	@Override
 	public void tick() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

@@ -17,12 +17,14 @@ public class Aircraft extends Entity{
 	
 	private Boolean isConflict = false;	//	Aircraft separation requirements are below threshold
 	private Boolean isCrashing = false;	//	Aircraft has collided with another aircraft
-	private Boolean isClearILS = true;	//	Aircraft has been cleared for ILS[landing]
+	private Boolean isClearILS = false;	//	Aircraft has been cleared for ILS[landing]
+	private Boolean isHolding = false;	//	Aircraft is in a holding pattern
 	private double altCurrent;			//	Current altitude
 	private double altDesired;			//	Assigned [desired] altitude
 	private double climbCurrent = 0;	//	Current climb rate
 	private double climbMax = 2.5;		//	Max climb rate in thousands [Feet:Minute]
-	private double distTraveled = 0.0;
+	private double distTraveled = 0.0;	//	Used for flight history additions. 
+	private double holdTraveled = 0.0;	//	Used for flight holding patterns
 	
 	private int accelCur = 0;			//	Current acceleration
 	private int accelMax = 5;			//	Max acceleration
@@ -34,9 +36,9 @@ public class Aircraft extends Entity{
 	private int kiasDesired;			//	Knots indicated air speed
 	private int tasCurrent;				//	Knots ground [true air speed]
 	private int turnRateCur = 0;		//	Current turn rate
-	private int turnRateMax;			//	Maximum turn rate
+	private int turnRateMax = 3;		//	Maximum turn rate
 
-	private Fix toFix = null;			//	Fix destination
+	private Fix fix = null;			//	Fix destination
 	private Line2D direction;			//	Magical invisible line that extends in the direction the aircraft is flying.
 	private Localizer local = null;		//	Localizer the aircraft is using for landing.
 	private String airline;				//	Aircraft Operator
@@ -47,7 +49,7 @@ public class Aircraft extends Entity{
 	
 	private FLIGHT flight;			//	Flight status
 	
-	public Aircraft(double x, double y, int hdg, int speed, TYPE type){	//, Airport atc){
+	public Aircraft(double x, double y, int hdg, int speed, TYPE type){
 		loc = new Coords(x,y);
 		area = new Rectangle((int)(loc.getX() - 0.25 * PPNM), (int)(loc.getY() - 0.25 * PPNM), (int)((PPNM * 0.25) * 2),(int)((PPNM * 0.25) * 2) );
 		altCurrent = 4;
@@ -57,14 +59,22 @@ public class Aircraft extends Entity{
 		kiasCurrent = speed;
 		kiasDesired = kiasCurrent;
 		tasCurrent = kiasToTas(kiasCurrent);
-		turnRateMax = 3;
 		this.type = type;
 		direction = new Line2D.Double();
 		double ex = (loc.getX() + Game.WIDTH * Math.sin(Math.toRadians(headingCurrent)));
 		double ey = (loc.getY() - Game.WIDTH * Math.cos(Math.toRadians(headingCurrent)));
 		direction.setLine(loc.getX(), loc.getY(), ex, ey);
-		flight = FLIGHT.ARRIVAL;
+		flight = FLIGHT.HANDOFF_AR;
 		instruction = "";
+	}
+	
+	public void contact(){
+		if(flight == FLIGHT.HANDOFF_AR)
+			flight = FLIGHT.ARRIVAL;
+		if(flight == FLIGHT.HANDOFF_DE)
+			flight = FLIGHT.DEPARTURE;
+		else
+			return;
 	}
 
 	public void deselect(){
@@ -99,25 +109,18 @@ public class Aircraft extends Entity{
 		return kiasDesired;
 	}
 	
+	public boolean isClearILS(){
+		return isClearILS;
+	}
+	
+	public boolean isHolding(){
+		return isHolding;
+	}
+	
 	public boolean isSelected(){
 		return isSelected;
 	}
-	
-	private int kiasToTas(int kias){
-		return (int)(kias + (0.02 * kias * altCurrent));
-	}
-	
-	private double getFPS(){
-		return climbCurrent / Game.sweepsPerMin;
-	}
-	
-	private double getKPS(){
-		double vel = tasCurrent;
-		vel /= 60;
-		vel /= 60;
-		return vel * Game.sweepLength;
-	}
-	
+
 	public double getAltCur(){
 		return altCurrent;
 	}
@@ -210,9 +213,22 @@ public class Aircraft extends Entity{
 		kiasDesired = kts;
 	}
 	
+	public void toggleHold(){
+		if(isHolding)
+			isHolding = false;
+		else
+			isHolding = true;
+	}
+	
+	public void toggleILS(){
+		if(isClearILS)
+			isClearILS = false;
+		else
+			isClearILS = true;
+	}
+	
 	@Override
 	public void tick() {
-
 		move();
 		area.setBounds((int)(loc.getX() - 0.25 * PPNM), (int)(loc.getY() - 0.25 * PPNM), (int)((PPNM * 0.25) * 2),(int)((PPNM * 0.25) * 2) );
 		double ex = (loc.getX() + Game.WIDTH * Math.sin(Math.toRadians(headingCurrent)));
@@ -286,8 +302,6 @@ public class Aircraft extends Entity{
 
 	private void chkILS(){
 		if(local == null){
-			
-			
 			//orig
 			for(int i = 0; i < Handler.getLocalizers().size(); i++){
 				Localizer l = Handler.getLocalizers().elementAt(i);
@@ -337,6 +351,17 @@ public class Aircraft extends Entity{
 		return dist/(rate);
 	}
 
+	private double getFPS(){
+		return climbCurrent / Game.sweepsPerMin;
+	}
+	
+	private double getKPS(){
+		double vel = tasCurrent;
+		vel /= 60;
+		vel /= 60;
+		return vel * Game.sweepLength;
+	}
+	
 	private void heading(){
 		setTurnRate();
 		if(turnRateCur == 0)
@@ -395,6 +420,10 @@ public class Aircraft extends Entity{
 	private void ilsSpd(){
 		
 	}
+
+	private int kiasToTas(int kias){
+		return (int)(kias + (0.02 * kias * altCurrent));
+	}
 	
 	private void move(){
 		if(isClearILS && flight == FLIGHT.ARRIVAL){
@@ -414,12 +443,6 @@ public class Aircraft extends Entity{
 			altDesired = 0;
 			altitude();
 			throttle();
-	//		System.out.println("KIAS :" + kiasCurrent);
-	//		if(kiasCurrent < 10){
-				// Notify ATC of landing
-	//			
-	//			Game.finalizeWithHandler(this);
-	//		}
 		}
 		else{
 			altitude();
@@ -480,7 +503,4 @@ public class Aircraft extends Entity{
 		if(kiasCurrent < 0)
 			kiasCurrent = 0;
 	}
-
-
-
 }

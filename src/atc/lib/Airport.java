@@ -11,6 +11,16 @@ import atc.display.Text;
 import atc.type.FLIGHT;
 import atc.type.TYPE;
 
+/**
+ * Airport is essentially in charge of managing the air space of which the player 
+ * is in control. It is responsible for spawning arrivals and departures, 
+ * removing aircraft that have landed or wandered out of controled space, 
+ * checking for collisions, evaluating separation requirements, opening or closing runways, 
+ * and tracking such statistics as are involved in determining the skill so as
+ * to adjust the player load [difficulty] accordingly.
+ * @author Matt Bangert
+ *
+ */
 public class Airport extends Entity{
 
 	private Random rand = new Random();

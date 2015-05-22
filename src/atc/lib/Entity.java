@@ -6,12 +6,17 @@ import java.awt.Rectangle;
 import atc.Game;
 import atc.type.TYPE;
 
+/**
+ * Abstract class from which any class that needs to tick, render, be selected or processed 
+ * is extended.
+ * @author Matt Bangert
+ *
+ */
 public abstract class Entity {
 	/**
 	 * <b>P</b>ixels <b>P</b>er <b>N</b>autical <b>M</b>ile.
 	 */
-	public static double PPNM = Game.GAMEWIDTH / 60;
-	//public static double NMPP = 60 / Game.GAMEWIDTH;
+	public static double PPNM = Game.GAMEWIDTH / Game.sectorSize;
 	
 	protected boolean isSelected = false;
 	protected TYPE type;

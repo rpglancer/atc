@@ -9,14 +9,13 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 
 import atc.lib.Airport;
-import atc.lib.Coords;
 import atc.lib.Entity;
-import atc.lib.Fix;
 import atc.lib.Handler;
 import atc.lib.Hud;
 import atc.lib.MouseInput;
 
 public class Game extends Canvas implements Runnable{
+	public static final int sectorSize = 60;
 	public static final int sweepLength = 5;
 	public static final int sweepsPerMin = 60/sweepLength;
 	private static final long serialVersionUID = 6797603345816214805L;
@@ -78,13 +77,8 @@ public class Game extends Canvas implements Runnable{
 		this.addMouseMotionListener(new MouseInput(this, handler));
 		Airport airport = new Airport();
 		handler.add(airport);
-//		Aircraft aircraft = new Aircraft(256, 64, 180, 140, TYPE.AIRCRAFT_ARRIVE);
-//		Aircraft aircraft = new Aircraft(600, 300, 180, 140, TYPE.AIRCRAFT);
 		Hud hud = new Hud();
-//		handler.add(aircraft);
 		handler.add(hud);
-//		Fix fix = new Fix(new Coords(620, 330));
-//		handler.add(fix);
 	}
 	
 	private void render(){
@@ -108,7 +102,6 @@ public class Game extends Canvas implements Runnable{
 	public void run() {
 		init();
 		long lastTime = System.nanoTime();
-//		final double amountOfTicks = 30.0;			//	Keep @ 30 for now, no need to run 60fps, may drop lower.
 		final double amountOfTicks = 1.0/sweepLength;
 		double ns = 1000000000 / amountOfTicks;
 		double delta = 0;
