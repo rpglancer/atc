@@ -76,8 +76,6 @@ public class Game extends Canvas implements Runnable{
 		MouseInput mi = new MouseInput(this,handler);
 		this.addMouseListener(mi);
 		this.addMouseMotionListener(mi);
-//		this.addMouseListener(new MouseInput(this, handler));
-//		this.addMouseMotionListener(new MouseInput(this, handler));
 		Airport airport = new Airport();
 		handler.add(airport);
 		Hud hud = new Hud();

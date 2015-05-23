@@ -5,6 +5,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import atc.Game;
+import atc.type.FLIGHT;
 import atc.type.TYPE;
 
 public class MouseInput implements MouseMotionListener, MouseListener{
@@ -19,26 +20,26 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
 		// Move all this to mouse  Pressed
-		if(arg0.getButton() == MouseEvent.BUTTON1){
-			Coords coords = new Coords(arg0.getX(), arg0.getY());
-			if(arg0.getX() >= 0 && arg0.getX() <= Game.HUDWIDTH){
-				if(arg0.getY() >= 0 && arg0.getY() <= Game.HUDHEIGHT){
-					System.out.println("Process HUD!");
-					handler.getHud().processHud(arg0);
-				}
-			}
-			else{
-				ent = handler.retrieve(coords);
-				System.out.println(ent);
-			}
-		}
-		if(arg0.getButton() == MouseEvent.BUTTON3){
-			if(ent != null && ent.type == TYPE.AIRCRAFT){
-				Aircraft a = (Aircraft)ent;
-				Coords coords = new Coords(arg0.getX(), arg0.getY());
-				a.setHeadingDesired(coords);
-			}
-		}
+//		if(arg0.getButton() == MouseEvent.BUTTON1){
+//			Coords coords = new Coords(arg0.getX(), arg0.getY());
+//			if(arg0.getX() >= 0 && arg0.getX() <= Game.HUDWIDTH){
+//				if(arg0.getY() >= 0 && arg0.getY() <= Game.HUDHEIGHT){
+//					System.out.println("Process HUD!");
+//					handler.getHud().processHud(arg0);
+//				}
+//			}
+//			else{
+//				ent = handler.retrieve(coords);
+//				System.out.println(ent);
+//			}
+//		}
+//		if(arg0.getButton() == MouseEvent.BUTTON3){
+//			if(ent != null && ent.type == TYPE.AIRCRAFT){
+//				Aircraft a = (Aircraft)ent;
+//				Coords coords = new Coords(arg0.getX(), arg0.getY());
+//				a.setHeadingDesired(coords);
+//			}
+//		}
 	}
 
 	@Override
@@ -54,21 +55,41 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	}
 
 	@Override
-	public void mousePressed(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		if(ent != null && ent.type == TYPE.AIRCRAFT){
-			if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK){
-				Coords temp = new Coords(arg0.getX(), arg0.getY());
-				Entity e = handler.retrieve(temp);
-				if(e != null && e.type == TYPE.FIX){
-					Fix f = (Fix)e;
-					pressed = temp;
-					Aircraft a = (Aircraft)ent;
-					a.setFix(f);
+	public void mousePressed(MouseEvent arg0){
+		switch(arg0.getButton()){
+		case MouseEvent.BUTTON1:
+			if(arg0.getX() >= 0 && arg0.getX() <= Game.HUDWIDTH &&
+			arg0.getY() >= 0 && arg0.getY() <= Game.HUDHEIGHT){
+				handler.getHud().processHud(arg0);
+			}
+			else{
+				if(ent != null) ent.deselect();
+				ent = handler.retrieve(new Coords(arg0.getX(),arg0.getY()));
+			}
+			break;
+			
+		case MouseEvent.BUTTON3:
+			if(ent != null && ent.type == TYPE.AIRCRAFT){
+				Aircraft a = (Aircraft)ent;
+				Coords temp = new Coords(arg0.getX(),arg0.getY());
+				if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK){
+					Entity e = handler.retrieve(temp);
+					if(e != null && e.type == TYPE.FIX){
+						Fix f = (Fix)e;
+						pressed = temp;
+						a.setFix(f);
+					}
+					else{
+						if(a.getFlight() == FLIGHT.ARRIVAL){
+							a.setFix(null);
+							a.setFixHdg(-1);
+							a.setHeadingDesired(temp);
+						}
+					}
 				}
 			}
+			break;
 		}
-		System.out.println(arg0);
 	}
 
 	@Override
@@ -90,6 +111,8 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
 			// Don't use dragged.
+			// ... maybe for drawing lines.
+			// No graphics buffer... maybe not?
 	}
 
 	@Override

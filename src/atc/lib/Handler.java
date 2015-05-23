@@ -75,7 +75,7 @@ public class Handler {
 					}
 				case FIX:
 					if(coords.getX() >= entity.getArea().getMinX() && coords.getX() <= entity.getArea().getMaxX()
-					&& coords.getY() >= entity.getArea().getMinY() && coords.getY() <= entity.getArea().getMaxX()){
+					&& coords.getY() >= entity.getArea().getMinY() && coords.getY() <= entity.getArea().getMaxY()){
 						return entity;
 					}
 					
@@ -85,8 +85,8 @@ public class Handler {
 
 			}
 		}
-		if(entity != null)
-			entity.deselect();
+//		if(entity != null)
+//			entity.deselect();
 		return null;
 	}
 }

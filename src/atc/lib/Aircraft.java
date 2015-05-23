@@ -198,13 +198,18 @@ public class Aircraft extends Entity{
 	public void setFix(Fix fix){
 		System.out.println("Set Fix!");
 		this.fix = fix;
-		instruction = fix.getID();
+		if(fix != null)
+			instruction = fix.getID();
+		else
+			instruction = "";
 	}
 	
 	public void setFixHdg(int hdg){
 		System.out.println("Set Fix Heading!");
-		fixHeading = hdg;
-		instruction = fix.getID() + fixHeading;
+		if(hdg >= 0){
+			fixHeading = hdg;
+			instruction = fix.getID() + fixHeading;
+		}
 	}
 	
 	public void setFlightInfo(String oper, String number, String model){

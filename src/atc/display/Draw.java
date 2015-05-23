@@ -129,7 +129,14 @@ public class Draw {
 		Draw.box(g, rect, 2, Color.green, Color.black);
 		
 		g2d.setFont(prevF);
-		g2d.setColor(prevC);
+		g2d.setColor(prevC);	
+	}
+	
+	public static void line(Graphics g, Coords begin, Coords end, Color color){
+		Color prevC = g.getColor();
+		g.setColor(color);
+		g.drawLine((int)begin.getX(), (int)begin.getY(), (int)end.getX(), (int)end.getY());
+		g.setColor(prevC);
 		
 	}
 }
