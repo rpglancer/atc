@@ -8,6 +8,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 
 import atc.Game;
+import atc.display.Draw;
 import atc.type.TYPE;
 
 public class Runway extends Entity{

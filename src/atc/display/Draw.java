@@ -12,9 +12,11 @@ import java.util.Vector;
 import atc.lib.Aircraft;
 import atc.lib.Airport;
 import atc.lib.Coords;
+import atc.type.FLIGHT;
 
 public class Draw {
 
+	public static void aircraft(Graphics g, Aircraft a){}
 	public static void airport(Graphics g, Airport airport){
 		int height = 4, width = 4;
 		Color prev = g.getColor();
@@ -68,41 +70,45 @@ public class Draw {
 		g2d.setColor(prevC);
 		g2d.setStroke(prevS);
 	}
-	
+
 	public static void flightinfo(Graphics g, Aircraft a){
-		String s;
 		Color prevC = g.getColor();
 		Font prevF = g.getFont();
 		g.setFont(Fonts.radartext);
 		FontMetrics fm = g.getFontMetrics(Fonts.radartext);
 		
-		if(a.getAltDes() > a.getAltCur()){
-			s = (int)(a.getAltCur()*10) + Fonts.climb + (int)(a.getAltDes() * 10);
-		}
-		else if(a.getAltDes() < a.getAltCur()){
-			s = (int)(a.getAltCur()*10) + Fonts.decent + (int)(a.getAltDes() * 10);
-		}
-		else{
-			s = (int)(a.getAltCur()*10) + "=" + (int)(a.getAltDes() * 10);
-		}
+		int x = (int)a.getCoords().getX() + (int)(1*Aircraft.PPNM);
+		int y = (int)a.getCoords().getY();
 		
-		if(a.isSelected())
-			g.setColor(Color.yellow);
+		if(a.getFlight() == FLIGHT.HANDOFF_AR || a.getFlight() == FLIGHT.HANDOFF_DE ||
+				a.getFlight() == FLIGHT.CRUISE || a.getFlight() == FLIGHT.TAKEOFF)
+			g.setColor(Color.magenta);
 		else
 			g.setColor(Color.green);
-
-		int x = (int)a.getCoords().getX() + (int)(1*Aircraft.PPNM);
-		int y = (int)a.getCoords().getY() + (int)(1*Aircraft.PPNM);
-		g.drawString(a.getName(), x, y);
-		y+=fm.getAscent();
-		g.drawString(s, x, y);
-		y+=fm.getAscent();
-		g.drawString(a.getTAS() / 10 + " " + a.getInstruction(), x, y);
 		
-		g.setColor(prevC);
+		if(a.getFlight() != FLIGHT.ARRIVAL && a.getFlight() != FLIGHT.DEPARTURE){
+			g.drawString((int)(a.getAltCur()*10) + "", x, y);
+			y+=fm.getAscent();
+			g.drawString(a.getTAS() + "", x, y);
+		}
+		else{
+			String s = "";
+			if(a.getAltDes() > a.getAltCur())
+				s = (int)(a.getAltCur()*10) + Fonts.climb + (int)(a.getAltDes() * 10);
+			else if(a.getAltDes() < a.getAltCur())
+				s = (int)(a.getAltCur()*10) + Fonts.decent + (int)(a.getAltDes() * 10);
+			else
+				s = (int)(a.getAltCur()*10) + "=" + (int)(a.getAltDes() * 10);
+			g.drawString(a.getName(), x, y);
+			y+=fm.getAscent();
+			g.drawString(s, x, y);
+			y+=fm.getAscent();
+			g.drawString(a.getTAS() + " " + a.getInstruction(), x, y);
+		}
 		g.setFont(prevF);
+		g.setColor(prevC);
 	}
-
+	
 	public static void history(Graphics g, Vector<Coords>history){
 		Color prevC = g.getColor();
 		Font prevF = g.getFont();

@@ -80,13 +80,15 @@ public class Handler {
 					}
 					
 				default:
+					if(entity != null){
+					//	getHud().deselect();
+					}
+						
 					continue;			
 				}
 
 			}
 		}
-//		if(entity != null)
-//			entity.deselect();
 		return null;
 	}
 }

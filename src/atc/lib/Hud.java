@@ -139,12 +139,12 @@ public class Hud extends Entity{
 		Rectangle rect = new Rectangle(0,0,width,height);
 		Color prevc = g2d.getColor();
 		Font prevf = g2d.getFont();
-		
 		if(isSelected){
 			Draw.box(g, rect, 2, Color.green, Color.black);
+
 			
 			if(aircraft.getFlight() == FLIGHT.HANDOFF_AR || aircraft.getFlight() == FLIGHT.HANDOFF_DE){
-				Draw.box(g, hndoff, 2, Color.pink, Color.black);
+				Draw.box(g, hndoff, 2, Color.green, Color.black);
 				g.setColor(Color.green);
 				Text.boxText(g, Fonts.hudNumber, hndoff, HALIGN.CENTER, VALIGN.MIDDLE, "CONTACT");
 				Draw.box(g, cancel, 2, Color.green, Color.black);

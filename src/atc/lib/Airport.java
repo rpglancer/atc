@@ -58,6 +58,9 @@ public class Airport extends Entity{
 		genRunwyDept();
 		
 		openRunway(TYPE.RUNWAY_ARRIVE);
+		openRunway(TYPE.RUNWAY_ARRIVE);
+		openRunway(TYPE.RUNWAY_ARRIVE);
+		openRunway(TYPE.RUNWAY_DEPART);
 		openRunway(TYPE.RUNWAY_DEPART);
 		
 		aircraft = new Vector<Aircraft>();
@@ -166,14 +169,22 @@ public class Airport extends Entity{
 	 */
 	private void genRunwyAriv(){
 		Runway r;
-		for(int i = 0; i < maxRunwyAriv; i++){		
-			do{
+		for(int i = 0; i < maxRunwyAriv; i++){
+			if(arivRunways.size() == 0){
 				int randhdg = rand.nextInt(360);
 				int randdst = (int)(rand.nextInt(5) * Airport.PPNM);
 				int placehdg = rand.nextInt(360);
-				Coords placeCoords = Calc.relativeCoords(loc, placehdg, randdst);
-				r = new Runway(placeCoords.getX(), placeCoords.getY(), randhdg, TYPE.RUNWAY_ARRIVE);
-			}while(checkRunwayConflict(r));
+				Coords pc = Calc.relativeCoords(loc, placehdg, randdst);
+				r = new Runway(pc.getX(), pc.getY(), randhdg, TYPE.RUNWAY_ARRIVE);
+			}
+			else{
+				int hdg = arivRunways.elementAt(0).getHdg();
+				int randdst = (int)(5 * Airport.PPNM);
+				int placeHdg = arivRunways.elementAt(0).getHdg() - 90;
+				if(placeHdg < 0) placeHdg += 360;
+				Coords pc = Calc.relativeCoords(arivRunways.elementAt(arivRunways.size() - 1).getCoords(), placeHdg, randdst);
+				r = new Runway(pc.getX(), pc.getY(), hdg, TYPE.RUNWAY_ARRIVE);
+			}
 			availRunways.addElement(r);
 			arivRunways.addElement(r);
 		}
@@ -299,6 +310,12 @@ public class Airport extends Entity{
 					else if(Calc.lineIntcpt(rwy.getLocalizer().getLocPath(), tgt.getRunwayPath())){
 						return true;
 					}
+					else if(tgt.type == TYPE.RUNWAY_DEPART){
+						int dor = 0 + rwy.getHdg();
+						int dot = 0 + tgt.getHdg();
+						int doa = Math.abs(dor-dot);
+						if(doa < 45) return true;
+					}
 				}
 				if(rwy.type == TYPE.RUNWAY_DEPART){
 					if(tgt.type == TYPE.RUNWAY_ARRIVE && Calc.lineIntcpt(rwy.getDepartPath(), tgt.getLocalizer().getLocPath())){
@@ -309,6 +326,13 @@ public class Airport extends Entity{
 					}
 					else if(Calc.lineIntcpt(rwy.getDepartPath(), tgt.getRunwayPath())){
 						return true;
+					}
+					else if(tgt.type == TYPE.RUNWAY_ARRIVE){
+						int dor = 0 + rwy.getHdg();
+						int dot = 0 + tgt.getHdg();
+						int doa = Math.abs(dor-dot);
+						if(doa < 45) return true;
+						
 					}
 				}
 			}

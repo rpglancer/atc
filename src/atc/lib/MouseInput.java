@@ -19,27 +19,6 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	};
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
-		// Move all this to mouse  Pressed
-//		if(arg0.getButton() == MouseEvent.BUTTON1){
-//			Coords coords = new Coords(arg0.getX(), arg0.getY());
-//			if(arg0.getX() >= 0 && arg0.getX() <= Game.HUDWIDTH){
-//				if(arg0.getY() >= 0 && arg0.getY() <= Game.HUDHEIGHT){
-//					System.out.println("Process HUD!");
-//					handler.getHud().processHud(arg0);
-//				}
-//			}
-//			else{
-//				ent = handler.retrieve(coords);
-//				System.out.println(ent);
-//			}
-//		}
-//		if(arg0.getButton() == MouseEvent.BUTTON3){
-//			if(ent != null && ent.type == TYPE.AIRCRAFT){
-//				Aircraft a = (Aircraft)ent;
-//				Coords coords = new Coords(arg0.getX(), arg0.getY());
-//				a.setHeadingDesired(coords);
-//			}
-//		}
 	}
 
 	@Override
@@ -65,25 +44,28 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 			else{
 				if(ent != null) ent.deselect();
 				ent = handler.retrieve(new Coords(arg0.getX(),arg0.getY()));
+				if(ent == null)handler.getHud().deselect();
 			}
 			break;
 			
 		case MouseEvent.BUTTON3:
 			if(ent != null && ent.type == TYPE.AIRCRAFT){
 				Aircraft a = (Aircraft)ent;
-				Coords temp = new Coords(arg0.getX(),arg0.getY());
-				if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK){
-					Entity e = handler.retrieve(temp);
-					if(e != null && e.type == TYPE.FIX){
-						Fix f = (Fix)e;
-						pressed = temp;
-						a.setFix(f);
-					}
-					else{
-						if(a.getFlight() == FLIGHT.ARRIVAL){
-							a.setFix(null);
-							a.setFixHdg(-1);
-							a.setHeadingDesired(temp);
+				if(a.getFlight() == FLIGHT.ARRIVAL){
+					Coords temp = new Coords(arg0.getX(),arg0.getY());
+					if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK){
+						Entity e = handler.retrieve(temp);
+						if(e != null && e.type == TYPE.FIX){
+							Fix f = (Fix)e;
+							pressed = temp;
+							a.setFix(f);
+						}
+						else{
+							if(a.getFlight() == FLIGHT.ARRIVAL){
+								a.setFix(null);
+								a.setFixHdg(-1);
+								a.setHeadingDesired(temp);
+							}
 						}
 					}
 				}

@@ -86,9 +86,17 @@ public class Calc {
 		return angle;
 		}
 	
-	public static Coords relativeCoords(Coords src, int hdg, double dist){
-		double x = src.getX() + (dist * Math.sin(hdg));
-		double y = src.getY() - (dist * Math.cos(hdg));
+	/**
+	 * Method to calculate a target coordinate based upon distance and relative bearing from a source coordinate.
+	 * 
+	 * @param src	Source coordinate
+	 * @param brng	Relative bearing of the target from the source coordinate.
+	 * @param dist	Distance of the target from the source coordinate.
+	 * @return	Coordinates of the target.
+	 */
+	public static Coords relativeCoords(Coords src, int brng, double dist){
+		double x = src.getX() + (dist * Math.sin(Math.toRadians(brng)));
+		double y = src.getY() - (dist * Math.cos(Math.toRadians(brng)));
 		return new Coords((int)x, (int)y);
 	}
 	

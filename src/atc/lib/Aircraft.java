@@ -21,7 +21,7 @@ public class Aircraft extends Entity{
 	private Boolean isHolding = false;	//	Aircraft is in a holding pattern
 	private double altCurrent;			//	Current altitude
 	private double altDesired;			//	Assigned [desired] altitude
-	private double climbCurrent = 0;	//	Current climb rate
+	private double climbCurrent = 0;	//	Current climb rate [Feet:Sweep]
 	private double climbMax = 2.5;		//	Max climb rate in thousands [Feet:Minute]
 	private double distTraveled = 0.0;	//	Used for flight history additions. 
 	private double holdTraveled = 0.0;	//	Used for flight holding patterns
@@ -81,6 +81,14 @@ public class Aircraft extends Entity{
 		this.isSelected = false;
 	}
 	
+	public double getAltCur(){
+		return altCurrent;
+	}
+	
+	public double getAltDes(){
+		return altDesired;
+	}
+	
 	public Coords getCoords(){
 		return loc;
 	}
@@ -109,6 +117,10 @@ public class Aircraft extends Entity{
 		return kiasDesired;
 	}
 	
+	public Vector<Coords> getHistory(){
+		return history;
+	}
+	
 	public boolean isClearILS(){
 		return isClearILS;
 	}
@@ -121,14 +133,6 @@ public class Aircraft extends Entity{
 		return isSelected;
 	}
 
-	public double getAltCur(){
-		return altCurrent;
-	}
-	
-	public double getAltDes(){
-		return altDesired;
-	}
-	
 	@Override
 	public Rectangle getArea() {
 		return area;
@@ -155,25 +159,86 @@ public class Aircraft extends Entity{
 	}
 
 	@Override
+	public void render(Graphics g){
+		Graphics2D g2d = (Graphics2D)g;
+		Color prevC = g2d.getColor();
+		Font prevF = g2d.getFont();
+		double ex = (loc.getX() + (getKPS() * PPNM * 12) * Math.sin(Math.toRadians(headingCurrent)));
+		double ey = (loc.getY() - (getKPS() * PPNM * 12) * Math.cos(Math.toRadians(headingCurrent)));
+		if(isSelected)
+			g2d.setColor(Color.yellow);
+		else
+			g2d.setColor(Color.green);
+		Draw.centeredsquare(g, loc, PPNM * 0.25, Color.green, 2.0f);
+		Draw.centeredcircle(g, loc, 1*PPNM, g2d.getColor());
+		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
+		Draw.flightinfo(g, this);
+		g2d.setColor(prevC);
+		g2d.setFont(prevF);	
+	}
+	
+	/*
 	public void render(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
 		Color prevC = g2d.getColor();
 		Font prevF = g2d.getFont();
-		if(isSelected){
-			Draw.history(g, history);
-			g2d.setColor(Color.yellow);
-			if(altCurrent != altDesired){
-				double ex = (loc.getX() + (getKPS()) * PPNM * (getTTC() * 12) * Math.sin(Math.toRadians(headingCurrent)) );
-				double ey = (loc.getY() - (getKPS()) * PPNM * (getTTC() * 12) * Math.cos(Math.toRadians(headingCurrent)) );	
-				Draw.centeredcircle(g, new Coords(ex,ey), 0.5*PPNM, Color.magenta);
+		Color sepRingColor = Color.cyan;
+		switch(flight){
+		case ARRIVAL:
+			if(isSelected){
+				Draw.history(g, history);
+				g2d.setColor(Color.yellow);
+				if(altCurrent != altDesired){
+					double ex = (loc.getX() + (getKPS()) * PPNM * (getTTC() * 12) * Math.sin(Math.toRadians(headingCurrent)) );
+					double ey = (loc.getY() - (getKPS()) * PPNM * (getTTC() * 12) * Math.cos(Math.toRadians(headingCurrent)) );	
+					Draw.centeredcircle(g, new Coords(ex,ey), 0.5*PPNM, Color.magenta);
+				}
 			}
-		}
-		else{
-//			if(flight == FLIGHT.CRUISE) g2d.setColor(Color.darkGray);
+			else{
+				g2d.setColor(Color.green);
+			}
+			break;
+		case CRUISE:
+			g2d.setColor(Color.darkGray);
+			sepRingColor = Color.darkGray;
+			break;
+		case DEPARTURE:
+			if(isSelected){
+				Draw.history(g, history);
+				g2d.setColor(Color.yellow);
+				if(altCurrent != altDesired){
+					double ex = (loc.getX() + (getKPS()) * PPNM * (getTTC() * 12) * Math.sin(Math.toRadians(headingCurrent)) );
+					double ey = (loc.getY() - (getKPS()) * PPNM * (getTTC() * 12) * Math.cos(Math.toRadians(headingCurrent)) );	
+					Draw.centeredcircle(g, new Coords(ex,ey), 0.5*PPNM, Color.magenta);
+				}
+			}
+			else{
+				g2d.setColor(Color.green);
+			}
+			break;
+		case HANDOFF_AR:
+			g2d.setColor(Color.magenta);
+			sepRingColor = Color.magenta;
+			break;
+		case HANDOFF_DE:
+			g2d.setColor(Color.magenta);
+			sepRingColor = Color.magenta;
+			break;
+		case TAKEOFF:
+			g2d.setColor(Color.blue);
+			sepRingColor = Color.blue;
+			break;
+		default:
 			g2d.setColor(Color.green);
+			sepRingColor = Color.cyan;
+			break;	
 		}
+		if(isConflict || isCrashing){
+			g2d.setColor(Color.red);
+			sepRingColor = Color.red;
+		}
+		Draw.centeredcircle(g, loc, 1*PPNM, sepRingColor);
 		Draw.centeredsquare(g, loc, PPNM * 0.25, g2d.getColor(), 2.0f);
-		Draw.centeredcircle(g, loc, 1*PPNM, Color.cyan);
 		double ex = (loc.getX() + (getKPS() * PPNM * 12) * Math.sin(Math.toRadians(headingCurrent)));
 		double ey = (loc.getY() - (getKPS() * PPNM * 12) * Math.cos(Math.toRadians(headingCurrent)));
 		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
@@ -181,6 +246,7 @@ public class Aircraft extends Entity{
 		g2d.setFont(prevF);
 		Draw.flightinfo(g, this);
 	}
+	*/
 	
 	public void select(){
 		this.isSelected = true;
@@ -466,6 +532,15 @@ public class Aircraft extends Entity{
 			throttle();
 		}
 		else{
+			if(fix != null){
+				this.setHeadingDesired(fix.getCoords());
+				if(Calc.distanceNM(loc, fix.getCoords()) <= 0.5 && fixHeading >= 0){
+					setHeadingDesired(fixHeading);
+					fix = null;
+					fixHeading = -1;
+					instruction = "";
+				}
+			}
 			altitude();
 			heading();
 			throttle();
