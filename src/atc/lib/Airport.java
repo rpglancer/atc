@@ -25,17 +25,24 @@ public class Airport extends Entity{
 
 	private Random rand = new Random();
 	private Vector<Aircraft> aircraft;
+	private Vector<Fix> fixes;
 	private Vector<Rectangle> arrivalSectors;	//	Sectors [rectangles] inside which arrivals can spawn
 	private Vector<Runway> availRunways;		//	All runways, only used for checking overlap during placement spawn.
 	private Vector<Runway> arivRunways;			//	Arrival Runways
 	private Vector<Runway> depRunways;			//	Departure Runways
-	private int handoffs;						//	Handoffs completed
-	private int handoffsMissed;					//	Handoffs missed
-	private int score;							//	Player score
-	private int skill;							//	Player skill
-	private int planesLanded;					//	Aircraft landed
-	private int planesDeparted;					//	Aircraft departed
-	private int planesOutOfSector;				//	Aircraft out of sector
+
+	private int handoffs			= 0;		//	Handoffs completed
+	private int handoffsMissed		= 0;		//	Handoffs missed
+	private int score				= 0;		//	Player score
+	private int skill				= 0;		//	Player skill
+	private int planesLanded		= 0;		//	Aircraft landed
+	private int planesDeparted		= 0;		//	Aircraft departed
+	private int planesOutOfSector	= 0;		//	Aircraft out of sector
+
+	private int LAS	 = -1;						//	Last Arrival Sector
+	private int LDR	 = -1;						//	Last Departure Runway
+	private int SSLA = 0;						//	Sweeps Since Last Arrival
+	private int SSLD = 0;						//	Sweeps Since Last Departure
 	
 	private int maxRunwyAriv = 3;				//	Maximum number of arrival runways
 	private int maxRunwyDept = 2;				//	Maximum number of departure runways
@@ -54,6 +61,19 @@ public class Airport extends Entity{
 		openRunway(TYPE.RUNWAY_DEPART);
 		
 		aircraft = new Vector<Aircraft>();
+		
+		arrivalSectors = new Vector<Rectangle>();
+		Rectangle temp = new Rectangle(Game.HUDWIDTH,0,Game.GAMEWIDTH,96);			//	Sector North
+		arrivalSectors.addElement(temp);
+		temp = new Rectangle(Game.HUDWIDTH, 96, 96, Game.HEIGHT - 192);				//	Sector West	
+		arrivalSectors.addElement(temp);
+		temp = new Rectangle(Game.HUDWIDTH, Game.HEIGHT-96, Game.GAMEWIDTH, 96);	//	Sector South
+		arrivalSectors.addElement(temp);
+		temp = new Rectangle(Game.WIDTH-96, 96, 96, Game.HEIGHT- 192);				//	Sector East
+		arrivalSectors.addElement(temp);
+		
+		fixes = new Vector<Fix>();
+		genFixes();
 		
 		newFlight();
 	}
@@ -82,6 +102,8 @@ public class Airport extends Entity{
 
 	@Override
 	public void tick() {
+		SSLA++;
+		SSLD++;
 		chkLanded();
 	}
 
@@ -111,6 +133,22 @@ public class Airport extends Entity{
 		genFlightInfo(a);
 		aircraft.addElement(a);
 		Game.registerWithHandler(a);
+	}
+	
+	private void genFixes(){
+		Coords temp;
+		Fix fix;
+		for(int i = 0; i < 8; i++){
+			do{
+				int x = rand.nextInt(Game.GAMEWIDTH) + Game.HUDWIDTH;
+				int y = rand.nextInt(Game.HEIGHT); 
+				temp = new Coords(x,y);
+				int id = rand.nextInt(26);
+				fix = new Fix(temp, Text.fixNames[id]);
+			}while(checkFixConflict(fix));
+			fixes.addElement(fix);
+			Game.registerWithHandler(fix);
+		}
 	}
 	
 	private void genFlightInfo(Aircraft a){
@@ -206,6 +244,20 @@ public class Airport extends Entity{
 				}
 			}
 		}
+	}
+	
+	private boolean checkFixConflict(Fix fix){
+		if(fixes.size() == 0)
+			return false;
+		for(int i = 0; i < fixes.size(); i++){
+			if(fix.getID().equals(fixes.elementAt(i).getID()))
+				return true;
+			if(Calc.distanceNM(fix.getCoords(), fixes.elementAt(i).getCoords()) < 10)
+				return true;
+			if(Calc.distanceNM(fix.getCoords(), loc) >= 25)
+				return true;
+		}
+		return false;
 	}
 	
 	private boolean checkFlightNoConflict(int num){

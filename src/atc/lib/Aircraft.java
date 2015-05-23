@@ -134,6 +134,10 @@ public class Aircraft extends Entity{
 		return area;
 	}
 	
+	public Fix getFix(){
+		return fix;
+	}
+	
 	public String getFlightNo(){
 		return flightNumber;
 	}
@@ -189,6 +193,18 @@ public class Aircraft extends Entity{
 	public void setCoords(Coords coords){
 		loc.setX(coords.getX());
 		loc.setY(coords.getY());
+	}
+	
+	public void setFix(Fix fix){
+		System.out.println("Set Fix!");
+		this.fix = fix;
+		instruction = fix.getID();
+	}
+	
+	public void setFixHdg(int hdg){
+		System.out.println("Set Fix Heading!");
+		fixHeading = hdg;
+		instruction = fix.getID() + fixHeading;
 	}
 	
 	public void setFlightInfo(String oper, String number, String model){

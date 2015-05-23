@@ -18,8 +18,7 @@ public class Fix extends Entity{
 		this.ID = ID;
 		type = TYPE.FIX;
 		setCoords(coords);
-		area = new Rectangle((int)(loc.getX() - 0.25 * PPNM), (int)(loc.getY() - 0.25 * PPNM), (int)((PPNM * 0.25) * 2),(int)((PPNM * 0.25) * 2) );
-		Game.registerWithHandler(this);
+		area = new Rectangle((int)(loc.getX() - 0.50 * PPNM), (int)(loc.getY() - 0.50 * PPNM), (int)((PPNM * 0.50) * 2),(int)((PPNM * 0.50) * 2) );
 	}
 
 	@Override
@@ -27,6 +26,10 @@ public class Fix extends Entity{
 		return loc;
 	}
 
+	public String getID(){
+		return ID;
+	}
+	
 	@Override
 	public void deselect() {
 		// TODO Auto-generated method stub

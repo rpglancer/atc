@@ -49,9 +49,6 @@ public class Hud extends Entity{
 	private Rectangle cancel =	new Rectangle((int)confirm.getMaxX() + 16, (int)selILS.getMaxY() + 16, 64, 32);
 	
 	private Rectangle hndoff =	new Rectangle(24, Game.HUDHEIGHT / 2 - boxHeight / 2, Game.HUDWIDTH - 48, boxHeight);
-	
-//	private Rectangle confirm = new Rectangle((int)altBox.getX() - 40, (int)hdgBox.getMaxY() + 16, 64, 32);
-//	private Rectangle cancel  = new Rectangle(Game.HUDWIDTH / 2 + 8, (int)hdgBox.getMaxY() + 16, 64, 32);
 
 	
 	public Hud(){
@@ -126,7 +123,11 @@ public class Hud extends Entity{
 			else if(aircraft.getFlight() == FLIGHT.HANDOFF_AR || aircraft.getFlight() == FLIGHT.HANDOFF_DE){
 				if(mouseX >= hndoff.getMinX() && mouseX <= hndoff.getMaxX()
 					&& mouseY >= hndoff.getMinY() && mouseY <= hndoff.getMaxY()){
-						aircraft.contact();
+					aircraft.contact();
+					}
+				else if(mouseX >= cancel.getMinX() && mouseX <= cancel.getMaxX()
+						&& mouseY >= cancel.getMinY() && mouseY <= cancel.getMaxY()){
+					deselect();
 					}
 			}
 		}

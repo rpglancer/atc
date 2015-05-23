@@ -73,6 +73,11 @@ public class Handler {
 							return entity;
 						}
 					}
+				case FIX:
+					if(coords.getX() >= entity.getArea().getMinX() && coords.getX() <= entity.getArea().getMaxX()
+					&& coords.getY() >= entity.getArea().getMinY() && coords.getY() <= entity.getArea().getMaxX()){
+						return entity;
+					}
 					
 				default:
 					continue;			
