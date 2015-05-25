@@ -6,25 +6,31 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.util.Random;
 import java.util.Vector;
 
 import atc.Game;
 import atc.display.Draw;
 import atc.type.FLIGHT;
+import atc.type.SCORE;
 import atc.type.TYPE;
 
 public class Aircraft extends Entity{
+	
+	private static Random rand = new Random();
 	
 	private Boolean isConflict = false;	//	Aircraft separation requirements are below threshold
 	private Boolean isCrashing = false;	//	Aircraft has collided with another aircraft
 	private Boolean isClearILS = false;	//	Aircraft has been cleared for ILS[landing]
 	private Boolean isHolding = false;	//	Aircraft is in a holding pattern
+	
 	private double altCurrent;			//	Current altitude
 	private double altDesired;			//	Assigned [desired] altitude
 	private double climbCurrent = 0;	//	Current climb rate [Feet:Sweep]
 	private double climbMax = 2.5;		//	Max climb rate in thousands [Feet:Minute]
 	private double distTraveled = 0.0;	//	Used for flight history additions. 
 	private double holdTraveled = 0.0;	//	Used for flight holding patterns
+	private double rundTraveled = 0.0;	//	Used to takeoff calculating distance from runway.
 	
 	private int accelCur = 0;			//	Current acceleration
 	private int accelMax = 5;			//	Max acceleration
@@ -38,41 +44,53 @@ public class Aircraft extends Entity{
 	private int turnRateCur = 0;		//	Current turn rate
 	private int turnRateMax = 3;		//	Maximum turn rate
 
-	private Fix fix = null;			//	Fix destination
+	private Fix fix = null;				//	Fix destination
 	private Line2D direction;			//	Magical invisible line that extends in the direction the aircraft is flying.
 	private Localizer local = null;		//	Localizer the aircraft is using for landing.
 	private String airline;				//	Aircraft Operator
+	@Deprecated
 	private String model;				//	Model of aircraft
 	private String flightNumber;		//	Flight number
 	private String instruction;			//	Current instruction [if applicable]
 	private Vector<Coords> history = new Vector<Coords>();	//	Flight history coordinates
 	
-	private FLIGHT flight;			//	Flight status
+	private FLIGHT flight;				//	Flight status
 	
-	public Aircraft(double x, double y, int hdg, int speed, TYPE type){
+	//	Public Methods [alphabetical]
+	
+	public Aircraft(double x, double y, int hdg, int speed, FLIGHT flight){
+		type = TYPE.AIRCRAFT;
 		loc = new Coords(x,y);
 		area = new Rectangle((int)(loc.getX() - 0.25 * PPNM), (int)(loc.getY() - 0.25 * PPNM), (int)((PPNM * 0.25) * 2),(int)((PPNM * 0.25) * 2) );
-		altCurrent = 4;
+		if(flight == FLIGHT.HANDOFF_AR)
+			altCurrent = 14;
+		else
+			altCurrent = 0;
 		altDesired = altCurrent;
 		headingCurrent = hdg;
 		headingDesired = headingCurrent;
 		kiasCurrent = speed;
 		kiasDesired = kiasCurrent;
 		tasCurrent = kiasToTas(kiasCurrent);
-		this.type = type;
 		direction = new Line2D.Double();
 		double ex = (loc.getX() + Game.WIDTH * Math.sin(Math.toRadians(headingCurrent)));
 		double ey = (loc.getY() - Game.WIDTH * Math.cos(Math.toRadians(headingCurrent)));
 		direction.setLine(loc.getX(), loc.getY(), ex, ey);
-		flight = FLIGHT.HANDOFF_AR;
+		this.flight = flight;
 		instruction = "";
 	}
 	
 	public void contact(){
-		if(flight == FLIGHT.HANDOFF_AR)
+		if(flight == FLIGHT.HANDOFF_AR){
 			flight = FLIGHT.ARRIVAL;
-		if(flight == FLIGHT.HANDOFF_DE)
+			Airport.getScoreArray()[SCORE.HANDOFF.getSID()]++;
+			Airport.getScoreArray()[SCORE.PLYRSCORE.getSID()]+=5;
+		}
+		if(flight == FLIGHT.HANDOFF_DE){
 			flight = FLIGHT.DEPARTURE;
+			Airport.getScoreArray()[SCORE.HANDOFF.getSID()]++;
+			Airport.getScoreArray()[SCORE.PLYRSCORE.getSID()]+=5;
+		}
 		else
 			return;
 	}
@@ -89,12 +107,25 @@ public class Aircraft extends Entity{
 		return altDesired;
 	}
 	
+	@Override
+	public Rectangle getArea() {
+		return area;
+	}
+	
 	public Coords getCoords(){
 		return loc;
 	}
 	
+	public Fix getFix(){
+		return fix;
+	}
+	
 	public FLIGHT getFlight(){
 		return flight;
+	}
+	
+	public String getFlightNo(){
+		return flightNumber;
 	}
 	
 	public int getHdgCur(){
@@ -121,6 +152,22 @@ public class Aircraft extends Entity{
 		return history;
 	}
 	
+	public String getModel(){
+		return model;
+	}
+	
+	public String getName(){
+		return airline+flightNumber;
+	}
+	
+	public int getTAS(){
+		return tasCurrent;
+	}
+	
+	public boolean isConflict(){
+		return isConflict;
+	}
+	
 	public boolean isClearILS(){
 		return isClearILS;
 	}
@@ -134,42 +181,31 @@ public class Aircraft extends Entity{
 	}
 
 	@Override
-	public Rectangle getArea() {
-		return area;
-	}
-	
-	public Fix getFix(){
-		return fix;
-	}
-	
-	public String getFlightNo(){
-		return flightNumber;
-	}
-	
-	public String getModel(){
-		return model;
-	}
-	
-	public String getName(){
-		return airline+flightNumber;
-	}
-	
-	public int getTAS(){
-		return tasCurrent;
-	}
-
-	@Override
 	public void render(Graphics g){
 		Graphics2D g2d = (Graphics2D)g;
 		Color prevC = g2d.getColor();
 		Font prevF = g2d.getFont();
 		double ex = (loc.getX() + (getKPS() * PPNM * 12) * Math.sin(Math.toRadians(headingCurrent)));
 		double ey = (loc.getY() - (getKPS() * PPNM * 12) * Math.cos(Math.toRadians(headingCurrent)));
-		if(isSelected)
-			g2d.setColor(Color.yellow);
-		else
-			g2d.setColor(Color.green);
-		Draw.centeredsquare(g, loc, PPNM * 0.25, Color.green, 2.0f);
+		if(isSelected){
+			if(isConflict){
+				g2d.setColor(Color.red);
+				Draw.history(g, history);
+			}
+			else{
+				g2d.setColor(Color.yellow);
+				Draw.history(g, history);
+			}
+		}
+			
+		else{
+			if(isConflict)
+				g2d.setColor(Color.red);
+			else
+				g2d.setColor(Color.green);
+		}
+			
+		Draw.centeredsquare(g, loc, PPNM * 0.25, Color.green, 1.0f);
 		Draw.centeredcircle(g, loc, 1*PPNM, g2d.getColor());
 		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
 		Draw.flightinfo(g, this);
@@ -177,83 +213,16 @@ public class Aircraft extends Entity{
 		g2d.setFont(prevF);	
 	}
 	
-	/*
-	public void render(Graphics g) {
-		Graphics2D g2d = (Graphics2D) g;
-		Color prevC = g2d.getColor();
-		Font prevF = g2d.getFont();
-		Color sepRingColor = Color.cyan;
-		switch(flight){
-		case ARRIVAL:
-			if(isSelected){
-				Draw.history(g, history);
-				g2d.setColor(Color.yellow);
-				if(altCurrent != altDesired){
-					double ex = (loc.getX() + (getKPS()) * PPNM * (getTTC() * 12) * Math.sin(Math.toRadians(headingCurrent)) );
-					double ey = (loc.getY() - (getKPS()) * PPNM * (getTTC() * 12) * Math.cos(Math.toRadians(headingCurrent)) );	
-					Draw.centeredcircle(g, new Coords(ex,ey), 0.5*PPNM, Color.magenta);
-				}
-			}
-			else{
-				g2d.setColor(Color.green);
-			}
-			break;
-		case CRUISE:
-			g2d.setColor(Color.darkGray);
-			sepRingColor = Color.darkGray;
-			break;
-		case DEPARTURE:
-			if(isSelected){
-				Draw.history(g, history);
-				g2d.setColor(Color.yellow);
-				if(altCurrent != altDesired){
-					double ex = (loc.getX() + (getKPS()) * PPNM * (getTTC() * 12) * Math.sin(Math.toRadians(headingCurrent)) );
-					double ey = (loc.getY() - (getKPS()) * PPNM * (getTTC() * 12) * Math.cos(Math.toRadians(headingCurrent)) );	
-					Draw.centeredcircle(g, new Coords(ex,ey), 0.5*PPNM, Color.magenta);
-				}
-			}
-			else{
-				g2d.setColor(Color.green);
-			}
-			break;
-		case HANDOFF_AR:
-			g2d.setColor(Color.magenta);
-			sepRingColor = Color.magenta;
-			break;
-		case HANDOFF_DE:
-			g2d.setColor(Color.magenta);
-			sepRingColor = Color.magenta;
-			break;
-		case TAKEOFF:
-			g2d.setColor(Color.blue);
-			sepRingColor = Color.blue;
-			break;
-		default:
-			g2d.setColor(Color.green);
-			sepRingColor = Color.cyan;
-			break;	
-		}
-		if(isConflict || isCrashing){
-			g2d.setColor(Color.red);
-			sepRingColor = Color.red;
-		}
-		Draw.centeredcircle(g, loc, 1*PPNM, sepRingColor);
-		Draw.centeredsquare(g, loc, PPNM * 0.25, g2d.getColor(), 2.0f);
-		double ex = (loc.getX() + (getKPS() * PPNM * 12) * Math.sin(Math.toRadians(headingCurrent)));
-		double ey = (loc.getY() - (getKPS() * PPNM * 12) * Math.cos(Math.toRadians(headingCurrent)));
-		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
-		g2d.setColor(prevC);
-		g2d.setFont(prevF);
-		Draw.flightinfo(g, this);
-	}
-	*/
-	
 	public void select(){
 		this.isSelected = true;
 	}
 	
 	public void setAltitudeDesired(double alt){
 		altDesired = alt;
+	}
+	
+	public void setConflict(Boolean conflict){
+		isConflict = conflict;
 	}
 
 	public void setCoords(Coords coords){
@@ -276,6 +245,10 @@ public class Aircraft extends Entity{
 			fixHeading = hdg;
 			instruction = fix.getID() + fixHeading;
 		}
+	}
+	
+	public void setFlight(FLIGHT flight){
+		this.flight = flight;
 	}
 	
 	public void setFlightInfo(String oper, String number, String model){
@@ -321,50 +294,9 @@ public class Aircraft extends Entity{
 		double ex = (loc.getX() + Game.WIDTH * Math.sin(Math.toRadians(headingCurrent)));
 		double ey = (loc.getY() - Game.WIDTH * Math.cos(Math.toRadians(headingCurrent)));
 		direction.setLine(loc.getX(), loc.getY(), ex, ey);
-/*
-		if(flight == FLIGHT.ARRIVAL){
-			if(isClearILS && local == null){
-				for(int i = 0; i < Handler.getLocalizers().size(); i++){
-					Localizer l = Handler.getLocalizers().elementAt(i);
-					if(Calc.lineIntcpt(direction, l.getLocPath())){
-						Coords ci = Calc.intersection(direction, l.getLocPath());
-						if(Calc.distance(loc, ci) < 2 * PPNM){
-							local = l;
-							System.out.println("Found localizer " + local);
-							setInstruction(local.getID());
-							break;
-						}
-					}
-				}
-			}
-			if(local != null){
-				Coords ci = Calc.intersection(direction, local.getLocPath());
-				if(ci == null){
-					local = null;
-					System.out.println("Lost the localizer!");
-					setInstruction("");
-					flight = FLIGHT.ARRIVAL;
-					return;
-				}
-				double angle = Math.toDegrees(Calc.approachAngle(local.getCoords(), ci, loc));
-				if(angle >= 135 && Calc.distanceNM(loc, ci) <= 0.5){		// 0.5 might be too finnicky.
-					// Check for altitude here.
-					Coords intcpt = Calc.intersection(direction, local.getLocPath());
-					if(intcpt == null)
-						return;
-					if(Calc.distanceNM(intcpt, local.getCoords()) >= 15 && altCurrent <= 4.0)
-						flight = FLIGHT.ILS;
-					else if(Calc.distanceNM(intcpt, local.getCoords()) >= 11.25 && altCurrent <= 3.0)
-						flight = FLIGHT.ILS;
-					else if(Calc.distance(intcpt, local.getCoords()) >= 7.5 && altCurrent <= 2.0)
-						flight = FLIGHT.ILS;
-					if(flight == FLIGHT.ILS)
-						System.out.println("Established on the localizer!");
-				}
-			}
-		}
-		*/
 	}
+	
+	//	Private Methods [alphabetical]
 	
 	private void altitude(){
 		if(altCurrent == altDesired)
@@ -431,12 +363,6 @@ public class Aircraft extends Entity{
 			}
 		}
 	}
-	
-	private double getTTC(){
-		double dist = Math.abs(altCurrent - altDesired);
-		double rate = Math.abs(climbCurrent);	// climb rate per sweep
-		return dist/(rate);
-	}
 
 	private double getFPS(){
 		return climbCurrent / Game.sweepsPerMin;
@@ -447,6 +373,12 @@ public class Aircraft extends Entity{
 		vel /= 60;
 		vel /= 60;
 		return vel * Game.sweepLength;
+	}
+
+	private double getTTC(){
+		double dist = Math.abs(altCurrent - altDesired);
+		double rate = Math.abs(climbCurrent);	// climb rate per sweep
+		return dist/(rate);
 	}
 	
 	private void heading(){
@@ -505,6 +437,12 @@ public class Aircraft extends Entity{
 	}
 	
 	private void ilsSpd(){
+		if(Calc.distanceNM(loc, local.getCoords()) <= 4.0)
+			kiasDesired = 150;
+		if(Calc.distanceNM(loc, local.getCoords()) <= 3.0)
+			kiasDesired = 140;
+		if(Calc.distanceNM(loc, local.getCoords()) <= 2.0)
+			kiasDesired = 135;
 		
 	}
 
@@ -513,27 +451,12 @@ public class Aircraft extends Entity{
 	}
 	
 	private void move(){
-		if(isClearILS && flight == FLIGHT.ARRIVAL){
-			chkILS();
-		}
-		if(flight == FLIGHT.ILS){
-			ilsAlt();
-			ilsHdg();
-			ilsSpd();
-			if(altCurrent < 0.1){
-				flight = FLIGHT.LANDING;
-			}
-		}
-		else if(flight == FLIGHT.LANDING){
-			headingCurrent = local.getHdg();
-			kiasDesired = 0;
-			altDesired = 0;
-			altitude();
-			throttle();
-		}
-		else{
+		switch(flight){
+		case ARRIVAL:
+			if(isClearILS)
+				chkILS();
 			if(fix != null){
-				this.setHeadingDesired(fix.getCoords());
+				setHeadingDesired(fix.getCoords());
 				if(Calc.distanceNM(loc, fix.getCoords()) <= 0.5 && fixHeading >= 0){
 					setHeadingDesired(fixHeading);
 					fix = null;
@@ -541,22 +464,144 @@ public class Aircraft extends Entity{
 					instruction = "";
 				}
 			}
-			altitude();
-			heading();
-			throttle();
+			break;
+		case CRUISE:
+			break;
+		case DEPARTURE:
+			if(fix != null){
+				setHeadingDesired(fix.getCoords());
+				if(Calc.distanceNM(loc, fix.getCoords()) <= 0.5 && fixHeading >= 0){
+					setHeadingDesired(fixHeading);
+					fix = null;
+					fixHeading = -1;
+					instruction = "";
+				}
+			}
+			if(altCurrent >= 14){
+				flight = FLIGHT.CRUISE;
+				kiasDesired = 280;
+				altDesired = rand.nextInt(14) + 30;
+				if(fix != null){
+					Airport.getScoreArray()[SCORE.HANDOFF.getSID()]++;
+					Airport.getScoreArray()[SCORE.PLYRSKILL.getSID()]++;
+					Airport.getScoreArray()[SCORE.PLYRSCORE.getSID()]+=10;
+				}
+				else{
+					Airport.getScoreArray()[SCORE.PLYRSCORE.getSID()]+=5;
+				}
+				Airport.getScoreArray()[SCORE.CRUISEALT.getSID()]++;
+			}
+			break;
+		case HANDOFF_AR:
+//			blink();
+			break;
+		case HANDOFF_DE:
+//			blink();
+			break;
+		case ILS:
+			ilsAlt();
+			ilsHdg();
+			ilsSpd();
+			if(altCurrent <= 0.1){
+				flight = FLIGHT.LANDING;
+			}
+			break;
+		case LANDING:
+			headingCurrent = local.getHdg();
+			kiasDesired = 0;
+			altDesired = 0;
+			break;
+		case TAKEOFF:
+			if(rundTraveled >= 10){
+				headingDesired = (int)Calc.relativeBearing(loc, fix.getCoords());
+				flight = FLIGHT.HANDOFF_DE;
+			}
+			if(altCurrent == 0){
+				kiasDesired = 150;
+			}
+			else{
+				kiasDesired = 180;
+			}
+			if(kiasCurrent < 150){
+				altDesired = 0;
+			}
+			else{
+				altDesired = 4;
+			}
+			rundTraveled += getKPS();
+			break;
+		default:
+			break;
 		}
+		altitude();
+		heading();
+		throttle();
+		
+//		if(isClearILS && flight == FLIGHT.ARRIVAL){
+//			chkILS();
+//		}
+//		if(flight == FLIGHT.ILS){
+//			ilsAlt();
+//			ilsHdg();
+//			ilsSpd();
+//			if(altCurrent <= 0.1){
+//				flight = FLIGHT.LANDING;
+//			}
+//		}
+//		else if(flight == FLIGHT.LANDING){
+//			headingCurrent = local.getHdg();
+//			kiasDesired = 0;
+//			altDesired = 0;
+//			altitude();
+//			throttle();
+//		}
+//		else if(flight == FLIGHT.TAKEOFF){
+//			if(rundTraveled > 10){
+//				headingDesired = (int)Calc.relativeBearing(loc, fix.getCoords());
+//				flight = FLIGHT.HANDOFF_DE;
+//			}
+//			if(altCurrent == 0)
+//				kiasDesired = 150;
+//			else
+//				kiasDesired = 180;
+//			if(kiasCurrent < 150)
+//				altDesired = 0;
+//			else
+//				altDesired = 4;
+//			altitude();
+//			heading();
+//			throttle();
+//		}
+
+//		else{
+//			if(fix != null){
+//				this.setHeadingDesired(fix.getCoords());
+//				if(Calc.distanceNM(loc, fix.getCoords()) <= 0.5 && fixHeading >= 0){
+//					setHeadingDesired(fixHeading);
+//					fix = null;
+//					fixHeading = -1;
+//					instruction = "";
+//				}
+//			}
+//			altitude();
+//			heading();
+//			throttle();
+//		}
 		double ex = (loc.getX() + (getKPS() * PPNM) * Math.sin(Math.toRadians(headingCurrent)));
 		double ey = (loc.getY() - (getKPS() * PPNM) * Math.cos(Math.toRadians(headingCurrent)));
 		loc.setX(ex);
 		loc.setY(ey);
 		distTraveled += getKPS();
-		if(distTraveled >= 0.50){
-			Coords prev = new Coords(loc.getX(), loc.getY());
-			history.add(0, prev);
-			if(history.size() == 20)
-				history.remove(19);
-			distTraveled = 0.0;
-		}
+		updateHistory();
+//		if(flight == FLIGHT.TAKEOFF)
+//			rundTraveled += getKPS();
+//		if(distTraveled >= 0.50){
+//			Coords prev = new Coords(loc.getX(), loc.getY());
+//			history.add(0, prev);
+//			if(history.size() == 20)
+//				history.remove(19);
+//			distTraveled = 0.0;
+//		}
 	}
 
 	private void setTurnRate(){
@@ -595,8 +640,25 @@ public class Aircraft extends Entity{
 			if(altCurrent == 0)
 				accelCur = -15;
 		}
+		if(flight == FLIGHT.TAKEOFF){
+			if(kiasDesired - kiasCurrent >= 12)
+				accelCur = 12;
+			else
+				accelCur = kiasDesired - kiasCurrent;
+		}
 		kiasCurrent += accelCur;
 		if(kiasCurrent < 0)
 			kiasCurrent = 0;
 	}
+
+	private void updateHistory(){
+		if(distTraveled >= 0.50){
+			Coords prev = new Coords(loc.getX(), loc.getY());
+			history.add(0, prev);
+			if(history.size() == 20)
+				history.remove(19);
+			distTraveled = 0.0;
+		}
+	}
+
 }

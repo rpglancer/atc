@@ -9,6 +9,7 @@ import atc.Game;
 import atc.display.Draw;
 import atc.display.Text;
 import atc.type.FLIGHT;
+import atc.type.SCORE;
 import atc.type.TYPE;
 
 /**
@@ -31,23 +32,30 @@ public class Airport extends Entity{
 	private Vector<Runway> arivRunways;			//	Arrival Runways
 	private Vector<Runway> depRunways;			//	Departure Runways
 
-	private int handoffs			= 0;		//	Handoffs completed
-	private int handoffsMissed		= 0;		//	Handoffs missed
-	private int score				= 0;		//	Player score
-	private int skill				= 0;		//	Player skill
-	private int planesLanded		= 0;		//	Aircraft landed
-	private int planesDeparted		= 0;		//	Aircraft departed
-	private int planesOutOfSector	= 0;		//	Aircraft out of sector
+//	private int handoffs			= 0;		//	Handoffs completed
+//	private int handoffsMissed		= 0;		//	Handoffs missed
+//	private int score				= 0;		//	Player score
+//	private int skill				= 0;		//	Player skill
+//	private int planesLanded		= 0;		//	Aircraft landed
+//	private int planesDeparted		= 0;		//	Aircraft departed
+//	private int planesOutOfSector	= 0;		//	Aircraft out of sector
 
 	private int LAS	 = -1;						//	Last Arrival Sector
 	private int LDR	 = -1;						//	Last Departure Runway
 	private int SSLA = 0;						//	Sweeps Since Last Arrival
 	private int SSLD = 0;						//	Sweeps Since Last Departure
 	
-	private int maxRunwyAriv = 3;				//	Maximum number of arrival runways
+	private int maxRunwyAriv = 2;				//	Maximum number of arrival runways
 	private int maxRunwyDept = 2;				//	Maximum number of departure runways
+	
+	private static int[] scoreArray = null;
 
 	public Airport(){
+		scoreArray = new int[SCORE.values().length];
+		for(SCORE score : SCORE.values()){
+			scoreArray[score.getSID()] = 0;
+			System.out.println("Score SID = " + score.getSID() + ".");
+		}
 		this.type = TYPE.AIRPORT;
 		this.loc = new Coords(Game.HUDWIDTH + (Game.GAMEWIDTH/2), Game.HEIGHT/2);
 		arivRunways = new Vector<Runway>();
@@ -57,7 +65,6 @@ public class Airport extends Entity{
 		genRunwyAriv();
 		genRunwyDept();
 		
-		openRunway(TYPE.RUNWAY_ARRIVE);
 		openRunway(TYPE.RUNWAY_ARRIVE);
 		openRunway(TYPE.RUNWAY_ARRIVE);
 		openRunway(TYPE.RUNWAY_DEPART);
@@ -78,16 +85,23 @@ public class Airport extends Entity{
 		fixes = new Vector<Fix>();
 		genFixes();
 		
-		newFlight();
+		newFlight(FLIGHT.ARRIVAL);
+		newFlight(FLIGHT.ARRIVAL);
+		newFlight(FLIGHT.TAKEOFF);
 	}
 	
 	public Coords getCoords(){
 		return loc;
 	}
 	
+	public static int[] getScoreArray(){
+		return scoreArray;
+	}
+	
 	@Override
 	public void render(Graphics g) {
 		Draw.airport(g, this);
+		Draw.score(g,this);
 	}
 	
 	public void deselect(){
@@ -105,16 +119,22 @@ public class Airport extends Entity{
 
 	@Override
 	public void tick() {
+		scoreArray[SCORE.PLAYTIME.getSID()] += 1;
 		SSLA++;
 		SSLD++;
+		
+//		chkCruise();
+		chkOOB();
 		chkLanded();
+		chkSeparation();
+		
 	}
 
 	@Override
 	public Rectangle getArea() {
 		return area;
 	}
-
+	
 	private void chkLanded(){
 		for(int i = 0; i < aircraft.size(); i++){
 			if(aircraft.elementAt(i).getFlight() != FLIGHT.LANDING)
@@ -125,17 +145,77 @@ public class Airport extends Entity{
 		}
 	}
 	
+	private void chkOOB(){
+		for(int i = 0; i < aircraft.size(); i++){
+			Aircraft a = aircraft.elementAt(i);
+			Coords c = a.getCoords();
+			if(c.getX() <= Game.HUDWIDTH || c.getX() > Game.WIDTH
+			|| c.getY() <= 0 || c.getY() >= Game.HEIGHT){
+				if(a.getFlight() != FLIGHT.CRUISE){
+					scoreArray[SCORE.OUTOFSEC.getSID()]++;
+					scoreArray[SCORE.PLYRSCORE.getSID()]-=50;
+					scoreArray[SCORE.PLYRSKILL.getSID()]-=1;
+					if(a.getFlight() == FLIGHT.HANDOFF_AR || a.getFlight() == FLIGHT.HANDOFF_DE){
+						scoreArray[SCORE.HANDOFFMISS.getSID()]++;
+						scoreArray[SCORE.PLYRSCORE.getSID()]-=25;
+						scoreArray[SCORE.PLYRSKILL.getSID()]-=1;
+					}
+				}
+				a.deselect();
+				Game.finalizeWithHandler(a);
+				aircraft.remove(a);
+			}
+		}
+	}
+	
+	private void chkSeparation(){
+		for(int i = 0; i < aircraft.size(); i++){
+			Aircraft src = aircraft.elementAt(i);
+			for(int t = 0; t < aircraft.size(); t++){
+				Aircraft tgt = aircraft.elementAt(t);
+				if(src == tgt)
+					continue;
+				else{
+					if(Math.abs(src.getAltCur() - tgt.getAltCur()) <= 1){
+						if(Calc.distanceNM(src.getCoords(), tgt.getCoords()) <= 1){
+							System.out.println("Set conflict");
+							src.setConflict(true);
+							scoreArray[SCORE.SEPINCTIME.getSID()] += 1;
+							break;
+						}
+					}
+					else{
+						src.setConflict(false);
+						//break;
+					}
+				}
+			}
+		}
+	}
+	
 	private void endFlight(Aircraft a){
-		a.deselect();
+		if(a.isSelected())
+			a.deselect();
 		Game.finalizeWithHandler(a);
 		aircraft.remove(a);
 	}
 	
-	private void newFlight(){
-		Aircraft a = new Aircraft(600, 300, 180, 140, TYPE.AIRCRAFT);//, this);
-		genFlightInfo(a);
-		aircraft.addElement(a);
-		Game.registerWithHandler(a);
+	private void newFlight(FLIGHT flight){
+		if(flight == FLIGHT.ARRIVAL){
+			Aircraft a = new Aircraft(600, 300, 180, 240, FLIGHT.HANDOFF_AR);//, this);
+			genFlightInfo(a);
+			aircraft.addElement(a);
+			Game.registerWithHandler(a);
+		}
+		else{
+			Runway d = depRunways.elementAt(0);
+			Aircraft a = new Aircraft(d.getCoords().getX(), d.getCoords().getY(), d.getHdg(), 0, FLIGHT.TAKEOFF);
+			genFlightInfo(a);
+			a.setFix(fixes.elementAt(rand.nextInt(fixes.size())));
+			aircraft.addElement(a);
+			Game.registerWithHandler(a);
+		}
+
 	}
 	
 	private void genFixes(){
@@ -155,13 +235,14 @@ public class Airport extends Entity{
 	}
 	
 	private void genFlightInfo(Aircraft a){
+		@Deprecated
 		int mo = rand.nextInt(Text.airTypes.length);
 		int op = rand.nextInt(Text.airNames.length);
 		int fn;
 		do{
 			fn = rand.nextInt(999) + 100;
 		}while(checkFlightNoConflict(fn));
-		a.setFlightInfo(Text.airNames[op], fn+"", Text.airTypes[mo]);
+		a.setFlightInfo(Text.airNames[op], fn + "", Text.airTypes[mo]);
 	}
 	
 	/**

@@ -6,6 +6,9 @@ package atc.lib;
  *
  */
 public class Convert {
+	public static int ticksToSeconds(int ticks){
+		return ticks * 5;
+	}
 	
 	/**
 	 * Method to convert a polar coordinate to the cartesian X value.

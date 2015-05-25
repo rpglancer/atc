@@ -6,7 +6,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-import atc.Game;
 import atc.display.Fonts;
 import atc.type.TYPE;
 

@@ -118,6 +118,33 @@ public class Hud extends Entity{
 						&& mouseY >= cancel.getMinY() && mouseY <= cancel.getMaxY()){
 					deselect();
 				}
+			}	
+			
+			else if(aircraft.getFlight() == FLIGHT.DEPARTURE){
+				if(mouseX >= decAlt.getMinX() && mouseX <= decAlt.getMaxX() 
+						&& mouseY >= decAlt.getMinY() && mouseY <= decAlt.getMaxY()){
+					adjAlt(-0.5);
+				}
+				else if(mouseX >= incAlt.getMinX() && mouseX <= incAlt.getMaxX() 
+						&& mouseY >= incAlt.getMinY() && mouseY <= incAlt.getMaxY()){
+					adjAlt(0.5);
+				}
+				else if(mouseX >= decSpd.getMinX() && mouseX <= decSpd.getMaxX() 
+						&& mouseY >= decSpd.getMinY() && mouseY <= decSpd.getMaxY()){
+					adjSpd(-10);
+				}
+				else if(mouseX >= incSpd.getMinX() && mouseX <= incSpd.getMaxX() 
+						&& mouseY >= incSpd.getMinY() && mouseY <= incSpd.getMaxY()){
+					adjSpd(10);
+				}
+				else if(mouseX >= confirm.getMinX() && mouseX <= confirm.getMaxX()
+						&& mouseY >= confirm.getMinX() && mouseY <= confirm.getMaxY()){
+					apply();
+				}
+				else if(mouseX >= cancel.getMinX() && mouseX <= cancel.getMaxX()
+						&& mouseY >= cancel.getMinY() && mouseY <= cancel.getMaxY()){
+					deselect();
+				}
 			}
 			
 			else if(aircraft.getFlight() == FLIGHT.HANDOFF_AR || aircraft.getFlight() == FLIGHT.HANDOFF_DE){
@@ -135,13 +162,14 @@ public class Hud extends Entity{
 
 	@Override
 	public void render(Graphics g) {
+		Aircraft temp = aircraft;
+		if(temp == null) deselect();
 		Graphics2D g2d = (Graphics2D) g;
 		Rectangle rect = new Rectangle(0,0,width,height);
 		Color prevc = g2d.getColor();
 		Font prevf = g2d.getFont();
 		if(isSelected){
 			Draw.box(g, rect, 2, Color.green, Color.black);
-
 			
 			if(aircraft.getFlight() == FLIGHT.HANDOFF_AR || aircraft.getFlight() == FLIGHT.HANDOFF_DE){
 				Draw.box(g, hndoff, 2, Color.green, Color.black);
@@ -157,27 +185,27 @@ public class Hud extends Entity{
 			g2d.setFont(Fonts.hudNumber);
 			
 			Draw.box(g, decAlt, 2, Color.green, Color.black);
-			Text.boxText(g, Fonts.hudNumber, decAlt, HALIGN.CENTER, VALIGN.MIDDLE, "v");
+			Text.boxText(g, Fonts.hudNumber, decAlt, HALIGN.CENTER, VALIGN.MIDDLE, Fonts.decent);
 			Draw.box(g, altBox, 2, Color.green, Color.black);
 			Text.boxText(g, Fonts.hudNumber, altBox, HALIGN.CENTER, VALIGN.MIDDLE, "FL"+(int)(selectedAlt * 10));
 			Draw.box(g, incAlt, 2, Color.green, Color.black);
-			Text.boxText(g, Fonts.hudNumber, incAlt, HALIGN.CENTER, VALIGN.MIDDLE, "^");
+			Text.boxText(g, Fonts.hudNumber, incAlt, HALIGN.CENTER, VALIGN.MIDDLE, Fonts.climb);
 			
 			Draw.box(g, decSpd, 2, Color.green, Color.black);
-			Text.boxText(g, Fonts.hudNumber, decSpd, HALIGN.CENTER, VALIGN.MIDDLE, "v");
+			Text.boxText(g, Fonts.hudNumber, decSpd, HALIGN.CENTER, VALIGN.MIDDLE, Fonts.decent);
 			Draw.box(g, spdBox, 2, Color.green, Color.black);
 			Text.boxText(g, Fonts.hudNumber, spdBox, HALIGN.CENTER, VALIGN.MIDDLE, selectedSpeed + "");
 			Draw.box(g, incSpd, 2, Color.green, Color.black);
-			Text.boxText(g, Fonts.hudNumber, incSpd, HALIGN.CENTER, VALIGN.MIDDLE, "^");
+			Text.boxText(g, Fonts.hudNumber, incSpd, HALIGN.CENTER, VALIGN.MIDDLE, Fonts.climb);
 			
 			Draw.box(g, decHdg, 2, Color.green, Color.black);
-			Text.boxText(g, Fonts.hudNumber, decHdg, HALIGN.CENTER, VALIGN.MIDDLE, "v");
+			Text.boxText(g, Fonts.hudNumber, decHdg, HALIGN.CENTER, VALIGN.MIDDLE, Fonts.decent);
 			Draw.box(g, hdgBox, 2, Color.green, Color.black);
 			Text.boxText(g, Fonts.hudNumber, hdgBox, HALIGN.CENTER, VALIGN.MIDDLE, selectedHdg + "");
 			Draw.box(g, incHdg, 2, Color.green, Color.black);
-			Text.boxText(g, Fonts.hudNumber, incHdg, HALIGN.CENTER, VALIGN.MIDDLE, "^");
+			Text.boxText(g, Fonts.hudNumber, incHdg, HALIGN.CENTER, VALIGN.MIDDLE, Fonts.climb);
 			
-			if(aircraft.getFlight() == FLIGHT.DEPARTURE){
+			if(temp.getFlight() == FLIGHT.DEPARTURE){
 				Draw.box(g, selILS, 2, Color.red, Color.darkGray);
 				Text.boxText(g, Fonts.hudNumber, selILS, HALIGN.CENTER, VALIGN.MIDDLE, "ILS");
 				
@@ -185,8 +213,8 @@ public class Hud extends Entity{
 				Text.boxText(g, Fonts.hudNumber, selHld, HALIGN.CENTER, VALIGN.MIDDLE, "HOLD");
 			}
 			
-			if(aircraft.getFlight() == FLIGHT.ARRIVAL){
-				if(aircraft.isClearILS()){
+			if(temp.getFlight() == FLIGHT.ARRIVAL){
+				if(temp.isClearILS()){
 					Draw.box(g, selILS, 2, Color.green, Color.green);
 					g.setColor(Color.black);
 					Text.boxText(g, Fonts.hudNumber, selILS, HALIGN.CENTER, VALIGN.MIDDLE, "ILS");
@@ -196,7 +224,7 @@ public class Hud extends Entity{
 					Draw.box(g, selILS, 2, Color.green, Color.black);
 					Text.boxText(g, Fonts.hudNumber, selILS, HALIGN.CENTER, VALIGN.MIDDLE, "ILS");
 				}
-				if(aircraft.isHolding()){
+				if(temp.isHolding()){
 					Draw.box(g, selHld, 2, Color.green, Color.green);
 					g.setColor(Color.black);
 					Text.boxText(g, Fonts.hudNumber, selHld, HALIGN.CENTER, VALIGN.MIDDLE, "HOLD");
@@ -218,7 +246,7 @@ public class Hud extends Entity{
 			
 		}
 		else{
-			Draw.box(g, rect, 1, Color.black, Color.gray);
+			Draw.box(g, rect, 1, Color.gray, Color.gray);
 		}
 		g2d.setColor(prevc);
 		g2d.setFont(prevf);

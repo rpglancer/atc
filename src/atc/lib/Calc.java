@@ -138,4 +138,29 @@ public class Calc {
 		
 		return new Coords(xi, yi);	
 	}	
+
+	public static int[] time(int seconds){
+		int[] time = {0,0,0};
+		if(seconds >= 3600){
+			do{
+				time[0]++;
+				seconds -= 3600;
+			}while(seconds >= 3600);
+			
+		}
+		if(seconds >= 60){
+			do{
+				time[1]++;
+				seconds -=60;
+			}while(seconds >= 60);
+		}
+		if(seconds >= 1){
+			do{
+				time[2]++;
+				seconds--;
+			}while(seconds > 0);
+		}
+//		time[2] = seconds;
+		return time;
+	}
 }
