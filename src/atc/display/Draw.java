@@ -53,6 +53,22 @@ public class Draw {
 		g2d.setColor(prevC);
 	}
 	
+	public static void cdend(Graphics g, Aircraft a){
+		if(a == null)return;
+		Color prevC = g.getColor();
+	//	double dist = a.getTTC() * Aircraft.PPNM;
+		double dist = (a.getTTC() * 12 * a.getKPS() * Aircraft.PPNM);
+		Coords fin = Calc.relativeCoords(a.getCoords(), a.getHdgCur(), dist);
+		int blh = a.getHdgCur() + 90;
+		int elh = a.getHdgCur() - 90;
+		if(blh >= 360) blh-=360;
+		if(elh < 0) elh += 360;
+		Coords blc = Calc.relativeCoords(fin, blh, 0.33 * Aircraft.PPNM);
+		Coords elc = Calc.relativeCoords(fin, elh, 0.33 *Aircraft.PPNM);
+		line(g,blc,elc,Color.yellow);
+		g.setColor(prevC);
+	}
+	
 	public static void centeredcircle(Graphics g, Coords coords, double radius, Color color){
 		Graphics2D g2d = (Graphics2D) g;
 		Color prevC = g2d.getColor();

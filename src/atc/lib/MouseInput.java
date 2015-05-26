@@ -76,7 +76,6 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 		if(ent != null && ent.type == TYPE.AIRCRAFT){
 			if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getButton() == MouseEvent.BUTTON3 && pressed != null){
 				Aircraft a = (Aircraft)ent;
@@ -86,15 +85,11 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 				}
 			}
 		}
-		System.out.println(arg0);
 		pressed = null;
 	}
 
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
-			// Don't use dragged.
-			// ... maybe for drawing lines.
-			// No graphics buffer... maybe not?
 	}
 
 	@Override

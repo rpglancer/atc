@@ -27,6 +27,7 @@ public class Game extends Canvas implements Runnable{
 	public static final int INFOHEIGHT = 480 - HUDHEIGHT;
 	private boolean running = false;
 	private BufferedImage image = new BufferedImage(WIDTH,HEIGHT,BufferedImage.TYPE_INT_RGB);
+	private static Graphics g = null;
 	private static Handler handler = new Handler();
 	private Thread thread;
 	
@@ -88,7 +89,8 @@ public class Game extends Canvas implements Runnable{
 			createBufferStrategy(3);
 			return;
 		}
-		Graphics g = bs.getDrawGraphics();	
+		g = bs.getDrawGraphics();
+		//Graphics g = bs.getDrawGraphics();	
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), this);
 		handler.render(g);
 		g.dispose();
@@ -122,6 +124,10 @@ public class Game extends Canvas implements Runnable{
 			render();
 		}
 		stop();	
+	}
+	
+	public static Graphics getG(){
+		return g;
 	}
 	
 	public static void finalizeWithHandler(Entity entity){

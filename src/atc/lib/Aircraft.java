@@ -19,8 +19,8 @@ public class Aircraft extends Entity{
 	
 	private static Random rand = new Random();
 	
+	private Boolean holdLeg = true;
 	private Boolean isConflict = false;	//	Aircraft separation requirements are below threshold
-	private Boolean isCrashing = false;	//	Aircraft has collided with another aircraft
 	private Boolean isClearILS = false;	//	Aircraft has been cleared for ILS[landing]
 	private Boolean isHolding = false;	//	Aircraft is in a holding pattern
 	
@@ -164,6 +164,12 @@ public class Aircraft extends Entity{
 		return tasCurrent;
 	}
 	
+	public double getTTC(){
+		double dist = Math.abs(altCurrent - altDesired);
+		double rate = Math.abs(climbCurrent);	// climb rate per sweep
+		return dist/(rate);
+	}
+	
 	public boolean isConflict(){
 		return isConflict;
 	}
@@ -196,6 +202,8 @@ public class Aircraft extends Entity{
 				g2d.setColor(Color.yellow);
 				Draw.history(g, history);
 			}
+			if(altCurrent != altDesired)
+				Draw.cdend(g, this);
 		}
 			
 		else{
@@ -345,7 +353,7 @@ public class Aircraft extends Entity{
 				return;
 			}
 			double angle = Math.toDegrees(Calc.approachAngle(local.getCoords(), ci, loc));
-			if(angle >= 135 && Calc.distanceNM(loc, ci) <= 0.5){		// 0.5 might be too finnicky.
+			if(angle >= 135 && Calc.distanceNM(loc, ci) <= 0.75){		// 0.5 might be too finnicky.
 				// Check for altitude here.
 				Coords intcpt = Calc.intersection(direction, local.getLocPath());
 				if(intcpt == null)
@@ -364,23 +372,43 @@ public class Aircraft extends Entity{
 		}
 	}
 
+	private void flyHold(){
+		if(fix != null)
+			return;
+		else{
+			holdTraveled += getKPS();
+			if(holdLeg){
+				if(holdTraveled >= 6){
+					int h = headingCurrent + 90;
+					if(h >= 360) h-=360;
+					headingDesired = h;
+					holdTraveled = 0;
+					holdLeg = false;
+				}
+			}
+			else{
+				if(holdTraveled >= 3){
+					int h = headingCurrent + 90;
+					if(h >= 360) h-=360;
+					headingDesired = h;
+					holdTraveled = 0;
+					holdLeg = true;
+				}
+			}
+		}
+	}
+	
 	private double getFPS(){
 		return climbCurrent / Game.sweepsPerMin;
 	}
 	
-	private double getKPS(){
+	public double getKPS(){
 		double vel = tasCurrent;
 		vel /= 60;
 		vel /= 60;
 		return vel * Game.sweepLength;
 	}
 
-	private double getTTC(){
-		double dist = Math.abs(altCurrent - altDesired);
-		double rate = Math.abs(climbCurrent);	// climb rate per sweep
-		return dist/(rate);
-	}
-	
 	private void heading(){
 		setTurnRate();
 		if(turnRateCur == 0)
@@ -437,13 +465,12 @@ public class Aircraft extends Entity{
 	}
 	
 	private void ilsSpd(){
-		if(Calc.distanceNM(loc, local.getCoords()) <= 4.0)
-			kiasDesired = 150;
-		if(Calc.distanceNM(loc, local.getCoords()) <= 3.0)
-			kiasDesired = 140;
-		if(Calc.distanceNM(loc, local.getCoords()) <= 2.0)
-			kiasDesired = 135;
-		
+		if(local == null)
+			return;
+		double drt = Calc.distanceNM(loc, local.getCoords());	// Distance Runway Threshold
+		if(drt >= 0) kiasDesired = 135;
+		if(drt >= 3) kiasDesired = 140;
+		if(drt >= 4) kiasDesired = 150;
 	}
 
 	private int kiasToTas(int kias){
@@ -464,6 +491,8 @@ public class Aircraft extends Entity{
 					instruction = "";
 				}
 			}
+			if(isHolding)
+				flyHold();
 			break;
 		case CRUISE:
 			break;
@@ -536,72 +565,12 @@ public class Aircraft extends Entity{
 		altitude();
 		heading();
 		throttle();
-		
-//		if(isClearILS && flight == FLIGHT.ARRIVAL){
-//			chkILS();
-//		}
-//		if(flight == FLIGHT.ILS){
-//			ilsAlt();
-//			ilsHdg();
-//			ilsSpd();
-//			if(altCurrent <= 0.1){
-//				flight = FLIGHT.LANDING;
-//			}
-//		}
-//		else if(flight == FLIGHT.LANDING){
-//			headingCurrent = local.getHdg();
-//			kiasDesired = 0;
-//			altDesired = 0;
-//			altitude();
-//			throttle();
-//		}
-//		else if(flight == FLIGHT.TAKEOFF){
-//			if(rundTraveled > 10){
-//				headingDesired = (int)Calc.relativeBearing(loc, fix.getCoords());
-//				flight = FLIGHT.HANDOFF_DE;
-//			}
-//			if(altCurrent == 0)
-//				kiasDesired = 150;
-//			else
-//				kiasDesired = 180;
-//			if(kiasCurrent < 150)
-//				altDesired = 0;
-//			else
-//				altDesired = 4;
-//			altitude();
-//			heading();
-//			throttle();
-//		}
-
-//		else{
-//			if(fix != null){
-//				this.setHeadingDesired(fix.getCoords());
-//				if(Calc.distanceNM(loc, fix.getCoords()) <= 0.5 && fixHeading >= 0){
-//					setHeadingDesired(fixHeading);
-//					fix = null;
-//					fixHeading = -1;
-//					instruction = "";
-//				}
-//			}
-//			altitude();
-//			heading();
-//			throttle();
-//		}
 		double ex = (loc.getX() + (getKPS() * PPNM) * Math.sin(Math.toRadians(headingCurrent)));
 		double ey = (loc.getY() - (getKPS() * PPNM) * Math.cos(Math.toRadians(headingCurrent)));
 		loc.setX(ex);
 		loc.setY(ey);
 		distTraveled += getKPS();
 		updateHistory();
-//		if(flight == FLIGHT.TAKEOFF)
-//			rundTraveled += getKPS();
-//		if(distTraveled >= 0.50){
-//			Coords prev = new Coords(loc.getX(), loc.getY());
-//			history.add(0, prev);
-//			if(history.size() == 20)
-//				history.remove(19);
-//			distTraveled = 0.0;
-//		}
 	}
 
 	private void setTurnRate(){
@@ -638,7 +607,7 @@ public class Aircraft extends Entity{
 		}
 		if(flight == FLIGHT.LANDING){
 			if(altCurrent == 0)
-				accelCur = -15;
+				accelCur = -12;
 		}
 		if(flight == FLIGHT.TAKEOFF){
 			if(kiasDesired - kiasCurrent >= 12)

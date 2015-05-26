@@ -11,7 +11,8 @@ public enum SCORE {
 	HANDOFFMISS	(7),
 	OUTOFSEC	(8),
 	SEPINCTIME	(9),
-	PLAYTIME	(10);
+	PLAYTIME	(10),
+	CRASHED		(11);
 	
 	private int sID;
 	

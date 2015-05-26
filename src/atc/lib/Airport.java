@@ -32,14 +32,6 @@ public class Airport extends Entity{
 	private Vector<Runway> arivRunways;			//	Arrival Runways
 	private Vector<Runway> depRunways;			//	Departure Runways
 
-//	private int handoffs			= 0;		//	Handoffs completed
-//	private int handoffsMissed		= 0;		//	Handoffs missed
-//	private int score				= 0;		//	Player score
-//	private int skill				= 0;		//	Player skill
-//	private int planesLanded		= 0;		//	Aircraft landed
-//	private int planesDeparted		= 0;		//	Aircraft departed
-//	private int planesOutOfSector	= 0;		//	Aircraft out of sector
-
 	private int LAS	 = -1;						//	Last Arrival Sector
 	private int LDR	 = -1;						//	Last Departure Runway
 	private int SSLA = 0;						//	Sweeps Since Last Arrival
@@ -122,12 +114,11 @@ public class Airport extends Entity{
 		scoreArray[SCORE.PLAYTIME.getSID()] += 1;
 		SSLA++;
 		SSLD++;
-		
+		spawn();
 //		chkCruise();
 		chkOOB();
 		chkLanded();
 		chkSeparation();
-		
 	}
 
 	@Override
@@ -135,13 +126,28 @@ public class Airport extends Entity{
 		return area;
 	}
 	
+	private void chkCrash(){
+		for(int i = 0; i < aircraft.size(); i++){
+			if(aircraft.elementAt(i).getFlight() != FLIGHT.CRASHING)
+				continue;
+			if(aircraft.elementAt(i).getAltCur() <= 0){
+				endFlight(aircraft.elementAt(i));
+				scoreArray[SCORE.PLYRSCORE.getSID()] -= 1000;
+				scoreArray[SCORE.PLYRSKILL.getSID()] -= 10;
+			}
+		}
+	}
+	
 	private void chkLanded(){
 		for(int i = 0; i < aircraft.size(); i++){
 			if(aircraft.elementAt(i).getFlight() != FLIGHT.LANDING)
 				continue;
 			
-			if(aircraft.elementAt(i).getKIAS() == 0)
+			if(aircraft.elementAt(i).getKIAS() == 0){
 				endFlight(aircraft.elementAt(i));
+				scoreArray[SCORE.LANDED.getSID()]++;
+			}
+				
 		}
 	}
 	
@@ -201,21 +207,91 @@ public class Airport extends Entity{
 	}
 	
 	private void newFlight(FLIGHT flight){
-		if(flight == FLIGHT.ARRIVAL){
-			Aircraft a = new Aircraft(600, 300, 180, 240, FLIGHT.HANDOFF_AR);//, this);
+		if(flight == FLIGHT.ARRIVAL){	
+			int cx,cy;
+			int n = rand.nextInt(4);
+			Rectangle s = arrivalSectors.elementAt(n);
+			int hdg = 0;
+			switch(n){
+			case 0:		// N
+				cy = 1;
+				cx = rand.nextInt((int)(s.getMaxX() - s.getMinX())) + (int)s.getMinX();
+				if(cx > Game.GAMEWIDTH/2 + Game.HUDWIDTH){
+					hdg = 180 + rand.nextInt(45);
+				}
+				else{
+					hdg = 180 - rand.nextInt(45);
+				}
+				break;
+			case 1:		// W
+				cx = Game.HUDWIDTH + 1;
+				cy = rand.nextInt((int)(s.getMaxY() - s.getMinY())) + (int)s.getMinY();
+				if(cy > Game.HEIGHT / 2)
+					hdg = 90 - rand.nextInt(45);
+				else
+					hdg = 90 + rand.nextInt(45);
+				break;
+			case 2:		// S
+				cy = Game.HEIGHT - 1;
+				cx = rand.nextInt((int)(s.getMaxX() - s.getMinX())) + (int)s.getMinX();
+				if(cx > Game.GAMEWIDTH/2 + Game.HUDWIDTH)
+					hdg = 0 - rand.nextInt(45);
+				else
+					hdg = 0 + rand.nextInt(45);
+				break;
+			case 3:		// E
+				cx = Game.WIDTH - 1;
+				cy = rand.nextInt((int)(s.getMaxY() - s.getMinY())) + (int)s.getMinY();
+				if(cy > Game.HEIGHT / 2)
+					hdg = 270 + rand.nextInt(45);
+				else
+					hdg = 270 - rand.nextInt(45);
+				break;
+			default:
+				System.out.println("WARN: newFlight reached default case.");
+				cx = Game.WIDTH / 2 + Game.HUDWIDTH;
+				cy = Game.HEIGHT / 2;
+				hdg = rand.nextInt(360);
+				break;
+			}
+			if(hdg >= 360)
+				hdg -= 360;
+			if(hdg < 0)
+				hdg += 360;
+			Aircraft a = new Aircraft(cx, cy, hdg, 240, FLIGHT.HANDOFF_AR);
 			genFlightInfo(a);
 			aircraft.addElement(a);
 			Game.registerWithHandler(a);
+			scoreArray[SCORE.ARRIVED.getSID()]++;
+			SSLA = 0;
 		}
 		else{
-			Runway d = depRunways.elementAt(0);
+			int nr = 0;
+			int dr = 0;
+			for(int i = 0; i < depRunways.size(); i++){
+				if(depRunways.elementAt(i).isOpen())
+					nr++;
+			}
+			if(nr > 1){
+				if(LDR == -1)
+					LDR = 0;
+				else{
+					if(LDR == 0)
+						dr = 1;
+					else
+						dr = 0;
+					LDR = dr;
+				}
+			}
+			Runway d = depRunways.elementAt(dr);
 			Aircraft a = new Aircraft(d.getCoords().getX(), d.getCoords().getY(), d.getHdg(), 0, FLIGHT.TAKEOFF);
 			genFlightInfo(a);
 			a.setFix(fixes.elementAt(rand.nextInt(fixes.size())));
 			aircraft.addElement(a);
 			Game.registerWithHandler(a);
+			scoreArray[SCORE.DEPARTED.getSID()]++;
+			SSLD = 0;
 		}
-
 	}
 	
 	private void genFixes(){
@@ -260,7 +336,7 @@ public class Airport extends Entity{
 			}
 			else{
 				int hdg = arivRunways.elementAt(0).getHdg();
-				int randdst = (int)(5 * Airport.PPNM);
+				int randdst = (int)(2.5 * Airport.PPNM);
 				int placeHdg = arivRunways.elementAt(0).getHdg() - 90;
 				if(placeHdg < 0) placeHdg += 360;
 				Coords pc = Calc.relativeCoords(arivRunways.elementAt(arivRunways.size() - 1).getCoords(), placeHdg, randdst);
@@ -339,14 +415,16 @@ public class Airport extends Entity{
 	}
 	
 	private boolean checkFixConflict(Fix fix){
-		if(fixes.size() == 0)
+		if(fixes.size() == 0 && Calc.distanceNM(fix.getCoords(), loc) >= 15)
 			return false;
 		for(int i = 0; i < fixes.size(); i++){
 			if(fix.getID().equals(fixes.elementAt(i).getID()))
 				return true;
-			if(Calc.distanceNM(fix.getCoords(), fixes.elementAt(i).getCoords()) < 10)
+			if(Calc.distanceNM(fix.getCoords(), loc) <= 15)
 				return true;
-			if(Calc.distanceNM(fix.getCoords(), loc) >= 25)
+			if(Calc.distanceNM(fix.getCoords(), fixes.elementAt(i).getCoords()) <= 10)
+				return true;
+			if(Calc.distanceNM(fix.getCoords(), loc) >= 30)
 				return true;
 		}
 		return false;
@@ -421,4 +499,25 @@ public class Airport extends Entity{
 		return false;
 	}
 	
+	private void spawn(){
+		int ps = scoreArray[SCORE.PLYRSKILL.getSID()];
+		int apm = 1;
+		int dpm = 1;
+		if(ps >=5){
+			apm = 2;
+			dpm = 2;
+		}
+		else if(ps >=10){
+			apm = 3;
+			dpm = 3;
+		}
+		else if(ps >=15){
+			apm = 4;
+			dpm = 4;
+		}
+		if(SSLA == 60/apm)
+			newFlight(FLIGHT.ARRIVAL);
+		if(SSLD == 60/dpm)
+			newFlight(FLIGHT.DEPARTURE);
+	}
 }

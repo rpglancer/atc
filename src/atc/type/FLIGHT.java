@@ -23,5 +23,6 @@ public enum FLIGHT {
 	HANDOFF_DE,		//	Departing flight is awaiting acknowledgement
 	ILS,			//	Flight is on final approach [on the localizer]
 	LANDING,		//	Flight is landing
-	TAKEOFF;		//	Flight is taking off
+	TAKEOFF,		//	Flight is taking off
+	CRASHING;		//	Flight is crashing		
 }

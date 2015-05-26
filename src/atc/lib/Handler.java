@@ -23,6 +23,10 @@ public class Handler {
 			e.addLast(entity);
 		if(entity.type == TYPE.WINDOW_INFO)
 			e.addLast(entity);
+		if(entity.type == TYPE.AIRPORT)
+			e.addFirst(entity);
+		if(entity.type == TYPE.AIRCRAFT)
+			e.addLast(entity);
 		else
 			e.push(entity);
 	}
