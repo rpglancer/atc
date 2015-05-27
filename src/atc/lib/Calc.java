@@ -160,7 +160,6 @@ public class Calc {
 				seconds--;
 			}while(seconds > 0);
 		}
-//		time[2] = seconds;
 		return time;
 	}
 }

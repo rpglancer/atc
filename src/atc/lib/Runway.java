@@ -17,7 +17,6 @@ public class Runway extends Entity{
 	private boolean isOpen = false;
 	private double heading;
 	private int length;					// Kind of redundant now that Runway has Line2D for the runway itself.
-	TYPE type;
 
 	public Runway(double x, double y, double heading, TYPE type){
 		loc = new Coords(x, y);

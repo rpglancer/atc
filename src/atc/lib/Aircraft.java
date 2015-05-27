@@ -217,6 +217,12 @@ public class Aircraft extends Entity{
 		Draw.centeredcircle(g, loc, 1*PPNM, g2d.getColor());
 		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
 		Draw.flightinfo(g, this);
+		if(MouseInput.mouseCoords()[0] != null && MouseInput.mouseCoords()[1] != null){
+			Coords src = MouseInput.mouseCoords()[0];
+			Coords tgt = MouseInput.mouseCoords()[1];
+			Draw.line(g, src, tgt, Color.yellow);
+			g2d.drawString((int)Calc.relativeBearing(src, tgt)+"", (int)tgt.getX(), (int)tgt.getY());
+		}
 		g2d.setColor(prevC);
 		g2d.setFont(prevF);	
 	}
@@ -239,7 +245,7 @@ public class Aircraft extends Entity{
 	}
 	
 	public void setFix(Fix fix){
-		System.out.println("Set Fix!");
+//		System.out.println("Set Fix!");
 		this.fix = fix;
 		if(fix != null)
 			instruction = fix.getID();
@@ -248,7 +254,8 @@ public class Aircraft extends Entity{
 	}
 	
 	public void setFixHdg(int hdg){
-		System.out.println("Set Fix Heading!");
+		if(fix == null) return;
+//		System.out.println("Set Fix Heading!");
 		if(hdg >= 0){
 			fixHeading = hdg;
 			instruction = fix.getID() + fixHeading;
@@ -335,10 +342,19 @@ public class Aircraft extends Entity{
 				if(Calc.lineIntcpt(direction, l.getLocPath())){
 					Coords ci = Calc.intersection(direction, l.getLocPath());
 					if(Calc.distance(loc, ci) < 2 * PPNM){
-						local = l;
-						System.out.println("Found localizer " + local);
-						setInstruction(local.getID());
-						break;
+						if(local == null){
+							local = l;
+							System.out.println("Found localizer " + local);
+							setInstruction(local.getID());
+						}
+						else{
+							if(Calc.distanceNM(loc, l.getCoords()) < Calc.distanceNM(loc, local.getCoords())){
+								local = l;
+								System.out.println("Found closer localizer " + local);
+								setInstruction(local.getID());
+							}
+						}
+
 					}
 				}
 			}
@@ -440,7 +456,7 @@ public class Aircraft extends Entity{
 	private void ilsAlt(){
 		if(altCurrent > Calc.distanceNM(loc, local.getCoords()) / 3.75)
 			altDesired = Calc.distanceNM(loc, local.getCoords()) / 3.75;		//	TODO: Should use a var for 3.75 to have different glide paths...
-		altitude();
+//		altitude();
 	}
 	
 	private void ilsHdg(){
@@ -461,7 +477,7 @@ public class Aircraft extends Entity{
 			turnRateCur = 0;
 			headingDesired = local.getHdg();
 		}
-		heading();
+//		heading();
 	}
 	
 	private void ilsSpd(){
@@ -579,7 +595,7 @@ public class Aircraft extends Entity{
 				turnRateCur = turnRateMax * Game.sweepLength;
 			else
 				turnRateCur = Math.abs(headingCurrent - headingDesired);//  Game.sweepLength;
-			System.out.println(headingCurrent + ", " + headingDesired + ", " + turnRateCur);
+//			System.out.println(headingCurrent + ", " + headingDesired + ", " + turnRateCur);
 		}
 		else turnRateCur = 0;
 	}

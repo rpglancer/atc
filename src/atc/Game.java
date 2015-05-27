@@ -27,7 +27,6 @@ public class Game extends Canvas implements Runnable{
 	public static final int INFOHEIGHT = 480 - HUDHEIGHT;
 	private boolean running = false;
 	private BufferedImage image = new BufferedImage(WIDTH,HEIGHT,BufferedImage.TYPE_INT_RGB);
-	private static Graphics g = null;
 	private static Handler handler = new Handler();
 	private Thread thread;
 	
@@ -39,7 +38,7 @@ public class Game extends Canvas implements Runnable{
 		game.setFocusable(true);
 		game.requestFocus();
 			
-		JFrame frame = new JFrame("ATC");
+		JFrame frame = new JFrame("ATC v0.9.0b");
 		
 			
 		frame.add(game);
@@ -89,8 +88,7 @@ public class Game extends Canvas implements Runnable{
 			createBufferStrategy(3);
 			return;
 		}
-		g = bs.getDrawGraphics();
-		//Graphics g = bs.getDrawGraphics();	
+		Graphics g = bs.getDrawGraphics();	
 		g.drawImage(image, 0, 0, getWidth(), getHeight(), this);
 		handler.render(g);
 		g.dispose();
@@ -108,32 +106,22 @@ public class Game extends Canvas implements Runnable{
 		final double amountOfTicks = 1.0/sweepLength;
 		double ns = 1000000000 / amountOfTicks;
 		double delta = 0;
-		double FPSLimiter = 0;
-//		long timer = System.currentTimeMillis();
+		long timer = System.currentTimeMillis();
 		
 		while(running){
 			long now = System.nanoTime();
 			delta += (now - lastTime) / ns;
-			FPSLimiter += (now - lastTime) / 30;
 			lastTime = now;
 			if(delta >= 1){
 				tick();
 				delta--;
 			}
-//			if(System.currentTimeMillis() - timer > 1000){
-//				timer += 1000;
-//			}
-			if(FPSLimiter >= 60){
-				render();
-				FPSLimiter = 0;
+			if(System.currentTimeMillis() - timer > 1000){
+				timer += 1000;
 			}
-			
+			render();			
 		}
 		stop();	
-	}
-	
-	public static Graphics getG(){
-		return g;
 	}
 	
 	public static void finalizeWithHandler(Entity entity){

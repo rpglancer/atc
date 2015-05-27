@@ -214,6 +214,8 @@ public class Draw {
 	y+=fm.getHeight();
 	int[] pt = Calc.time(Convert.ticksToSeconds(Airport.getScoreArray()[SCORE.PLAYTIME.getSID()]));
 	g2d.drawString("Play Time: " + pt[0]+":"+pt[1]+":"+pt[2] ,x, y);
+	y+=fm.getHeight();
+	g2d.drawString("Play Time[Ticks]: " + Airport.getScoreArray()[SCORE.PLAYTIME.getSID()], x, y);
 	g.setColor(prevC);
 	g.setFont(prevF);
 	}

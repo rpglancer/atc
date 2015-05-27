@@ -59,8 +59,8 @@ public class Airport extends Entity{
 		genRunwyDept();
 		
 		openRunway(TYPE.RUNWAY_ARRIVE);
-		openRunway(TYPE.RUNWAY_DEPART);
 		openRunway(TYPE.RUNWAY_ARRIVE);
+		openRunway(TYPE.RUNWAY_DEPART);
 		openRunway(TYPE.RUNWAY_DEPART);
 		
 		aircraft = new Vector<Aircraft>();
@@ -362,8 +362,6 @@ public class Airport extends Entity{
 		Runway r;
 		for(int i = 0; i < maxRunwyDept; i++){
 			int randhdg = arivRunways.elementAt(0).getHdg();
-//			int randhdg = arivRunways.elementAt(0).getHdg() - 180;
-//			if(randhdg < 0) randhdg+=360;
 			int randdst = (int)(2.5 * PPNM);
 			int placehdg = arivRunways.elementAt(0).getHdg() + 90;
 			if(depRunways.size() > 0)

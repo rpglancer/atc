@@ -42,7 +42,6 @@ public class Localizer extends Entity{
 		y = (this.rwy.getY() - (PPNM*7.5) * Math.cos(Math.toRadians(Convert.reciprocal(rwy.getHdg()))));
 		this.inner = new Coords(x,y);
 		glideslope = (int)Math.toDegrees(Math.atan(4/15));
-//		Game.registerWithHandler(this);
 	}
 	@Override
 	public Coords getCoords() {

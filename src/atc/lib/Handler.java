@@ -17,18 +17,58 @@ public class Handler {
 	private Entity entity;
 	
 	public void add(Entity entity){
-		if(entity.type == TYPE.LOCALIZER)
+		if(entity.type == TYPE.LOCALIZER){
 			localizers.addElement((Localizer)entity);
-		if(entity.type == TYPE.WINDOW_HUD)
+		}
+		if(entity.type == TYPE.WINDOW_HUD){
+			e.add((e.size()), entity);
+		}
+		else if(entity.type == TYPE.RUNWAY_ARRIVE){
+			e.add(seekLastIndex(TYPE.RUNWAY_ARRIVE)+1, entity);
+		}
+		else if(entity.type == TYPE.RUNWAY_DEPART){
+			e.add(seekLastIndex(TYPE.RUNWAY_DEPART)+1, entity);
+		}
+		else if(entity.type == TYPE.FIX){
+			int fix = -1;
+			for(int i = 0; i < e.size(); i++){
+				if(e.get(i).type == TYPE.LOCALIZER || e.get(i).type == TYPE.RUNWAY_ARRIVE || e.get(i).type == TYPE.RUNWAY_DEPART)
+					fix = i;
+			}
+			e.add(fix + 1, entity);
+		}
+		else if(entity.type == TYPE.WINDOW_INFO){
 			e.addLast(entity);
-		if(entity.type == TYPE.WINDOW_INFO)
-			e.addLast(entity);
-		if(entity.type == TYPE.AIRPORT)
-			e.addFirst(entity);
-		if(entity.type == TYPE.AIRCRAFT)
-			e.addLast(entity);
-		else
+		}
+		else if(entity.type == TYPE.AIRCRAFT){
+			int fix = -1;
+			for(int i = 0; i < e.size(); i++){
+				if(e.get(i).type == TYPE.FIX)
+					fix = i;
+			}
+			e.add(fix+1, entity);
+		}
+		else{
 			e.push(entity);
+		}
+	}
+	
+	private int seekFirstIndex(TYPE type){
+		for(int i = 0; i < e.size(); i++){
+			if(e.get(i).type == type){
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	private int seekLastIndex(TYPE type){
+		int index = -1;
+		for(int i = 0; i < e.size(); i++){
+			if(e.get(i).type == type)
+				index = i;
+		}
+		return index;
 	}
 	
 	public void tick(){

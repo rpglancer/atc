@@ -1,20 +1,23 @@
 package atc.lib;
 
+import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import atc.Game;
+import atc.display.Draw;
 import atc.type.FLIGHT;
 import atc.type.TYPE;
 
 public class MouseInput implements MouseMotionListener, MouseListener{
-	private Coords pressed;
+	private static Coords pressed;
+	private static Coords at;
 	private Entity ent = null;
 	private Handler handler;
 
 	public MouseInput(Game game, Handler handler){
-		System.out.println("New MouseInput!");
+//		System.out.println("New MouseInput!");
 		this.handler = handler;
 	};
 	@Override
@@ -37,13 +40,13 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	public void mousePressed(MouseEvent arg0){
 		switch(arg0.getButton()){
 		case MouseEvent.BUTTON1:
+			if(ent != null) ent.deselect();
 			ent = null;
 			if(arg0.getX() >= 0 && arg0.getX() <= Game.HUDWIDTH &&
 			arg0.getY() >= 0 && arg0.getY() <= Game.HUDHEIGHT){
 				handler.getHud().processHud(arg0);
 			}
 			else{
-				if(ent != null) ent.deselect();
 				ent = handler.retrieve(new Coords(arg0.getX(),arg0.getY()));
 				if(ent == null)handler.getHud().deselect();
 			}
@@ -63,6 +66,7 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 						}
 						else{
 							if(a.getFlight() == FLIGHT.ARRIVAL){
+								pressed = a.getCoords();
 								a.setFix(null);
 								a.setFixHdg(-1);
 								a.setHeadingDesired(temp);
@@ -87,10 +91,12 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 			}
 		}
 		pressed = null;
+		at = null;
 	}
 
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
+		at = new Coords(arg0.getX(), arg0.getY());
 	}
 
 	@Override
@@ -99,4 +105,8 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 		
 	}
 
+	public static Coords[] mouseCoords(){
+		Coords[] mc = {pressed, at};
+		return mc;
+	}
 }
