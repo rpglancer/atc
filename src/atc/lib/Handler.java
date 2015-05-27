@@ -81,6 +81,10 @@ public class Handler {
 		e.remove(entity);
 	}
 	
+	/**
+	 * Renders all entites currently registered with the Handler.
+	 * @param g	Graphics context.
+	 */
 	public void render(Graphics g){
 		for(int i = 0; i < e.size(); i++){
 			e.get(i).render(g);

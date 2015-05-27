@@ -37,8 +37,8 @@ public class Airport extends Entity{
 	private int SSLA = 0;						//	Sweeps Since Last Arrival
 	private int SSLD = 0;						//	Sweeps Since Last Departure
 	
-	private int curRunwyAriv = 0;
-	private int curRunwyDept = 0;
+	private int curRunwyAriv = 0;				//	Current number of open arrival runways
+	private int curRunwyDept = 0;				//	Current number of open departure runways
 	private int maxRunwyAriv = 2;				//	Maximum number of arrival runways
 	private int maxRunwyDept = 2;				//	Maximum number of departure runways
 	
@@ -262,7 +262,7 @@ public class Airport extends Entity{
 				hdg -= 360;
 			if(hdg < 0)
 				hdg += 360;
-			Aircraft a = new Aircraft(cx, cy, hdg, 240, FLIGHT.HANDOFF_AR);
+			Aircraft a = new Aircraft(new Coords(cx,cy), hdg, 240, FLIGHT.HANDOFF_AR);
 			genFlightInfo(a);
 			aircraft.addElement(a);
 			Game.registerWithHandler(a);
@@ -288,7 +288,8 @@ public class Airport extends Entity{
 				}
 			}
 			Runway d = depRunways.elementAt(dr);
-			Aircraft a = new Aircraft(d.getCoords().getX(), d.getCoords().getY(), d.getHdg(), 0, FLIGHT.TAKEOFF);
+			Aircraft a = new Aircraft(d.getCoords(), d.getHdg(), 0, FLIGHT.TAKEOFF);
+//			Aircraft a = new Aircraft(d.getCoords().getX(), d.getCoords().getY(), d.getHdg(), 0, FLIGHT.TAKEOFF);
 			genFlightInfo(a);
 			int fix = 0;
 			do{

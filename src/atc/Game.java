@@ -38,7 +38,7 @@ public class Game extends Canvas implements Runnable{
 		game.setFocusable(true);
 		game.requestFocus();
 			
-		JFrame frame = new JFrame("ATC v0.9.0b");
+		JFrame frame = new JFrame("ATC v0.8.0a");
 		
 			
 		frame.add(game);

@@ -1,12 +1,10 @@
 package atc.lib;
 
-import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import atc.Game;
-import atc.display.Draw;
 import atc.type.FLIGHT;
 import atc.type.TYPE;
 

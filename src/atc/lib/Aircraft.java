@@ -52,16 +52,17 @@ public class Aircraft extends Entity{
 	private String model;				//	Model of aircraft
 	private String flightNumber;		//	Flight number
 	private String instruction;			//	Current instruction [if applicable]
-	private Vector<Coords> history = new Vector<Coords>();	//	Flight history coordinates
+	private Vector<Coords> history;		//	Flight history coordinates
 	
 	private FLIGHT flight;				//	Flight status
 	
 	//	Public Methods [alphabetical]
 	
-	public Aircraft(double x, double y, int hdg, int speed, FLIGHT flight){
+	public Aircraft(Coords coords, int hdg, int speed, FLIGHT flight){
 		type = TYPE.AIRCRAFT;
-		loc = new Coords(x,y);
+		loc = coords;
 		area = new Rectangle((int)(loc.getX() - 0.25 * PPNM), (int)(loc.getY() - 0.25 * PPNM), (int)((PPNM * 0.25) * 2),(int)((PPNM * 0.25) * 2) );
+		history = new Vector<Coords>();
 		if(flight == FLIGHT.HANDOFF_AR)
 			altCurrent = 14;
 		else
