@@ -218,10 +218,14 @@ public class Aircraft extends Entity{
 		Draw.centeredcircle(g, loc, 1*PPNM, g2d.getColor());
 		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
 		Draw.flightinfo(g, this);
-		if(MouseInput.mouseCoords()[0] != null && MouseInput.mouseCoords()[1] != null){
+		if(MouseInput.mouseCoords()[0] != null && MouseInput.mouseCoords()[1] != null && isSelected){
 			Coords src = MouseInput.mouseCoords()[0];
 			Coords tgt = MouseInput.mouseCoords()[1];
 			Draw.line(g, src, tgt, Color.yellow);
+			if(fix != null){
+				Draw.centeredcircle(g, fix.getCoords(), 0.75 * PPNM, Color.yellow);
+				Draw.line(g, loc, fix.getCoords(), Color.yellow);
+			}
 			g2d.drawString((int)Calc.relativeBearing(src, tgt)+"", (int)tgt.getX(), (int)tgt.getY());
 		}
 		g2d.setColor(prevC);

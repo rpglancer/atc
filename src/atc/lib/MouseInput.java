@@ -5,7 +5,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import atc.Game;
-import atc.type.FLIGHT;
 import atc.type.TYPE;
 
 public class MouseInput implements MouseMotionListener, MouseListener{
@@ -49,7 +48,27 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 				if(ent == null)handler.getHud().deselect();
 			}
 			break;
-			
+		case MouseEvent.BUTTON3:
+			if(ent != null && ent.type == TYPE.AIRCRAFT){
+				Aircraft a = (Aircraft)ent;
+				Coords temp = new Coords(arg0.getX(), arg0.getY());
+				if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK){
+					Entity e = handler.retrieve(temp);
+					if(e != null && e.type == TYPE.FIX){
+						Fix f = (Fix)e;
+						pressed = temp;
+						a.setFix(f);
+					}
+					else{
+						pressed = a.getCoords();
+						a.setFix(null);
+						a.setFixHdg(-1);
+					}
+				}
+			}
+			break;
+
+		/*
 		case MouseEvent.BUTTON3:
 			if(ent != null && ent.type == TYPE.AIRCRAFT){
 				Aircraft a = (Aircraft)ent;
@@ -74,11 +93,26 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 				}
 			}
 			break;
+			*/
 		}
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
+		if(ent != null && ent.type == TYPE.AIRCRAFT){
+			Aircraft a = (Aircraft) ent;
+			at = new Coords(arg0.getX(), arg0.getY());
+			if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getButton() == MouseEvent.BUTTON3){
+				if(handler.retrieve(pressed).type == TYPE.FIX){
+					if(Calc.distanceNM(pressed, at) >= 1)
+						a.setFixHdg((int)Calc.relativeBearing(pressed, at));
+				}
+				else{
+					a.setHeadingDesired((int)Calc.relativeBearing(pressed, at));
+				}
+			}
+		}
+		/*
 		if(ent != null && ent.type == TYPE.AIRCRAFT){
 			if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getButton() == MouseEvent.BUTTON3 && pressed != null){
 				Aircraft a = (Aircraft)ent;
@@ -88,6 +122,7 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 				}
 			}
 		}
+		*/
 		pressed = null;
 		at = null;
 	}
