@@ -76,7 +76,7 @@ public class Hud extends Entity{
 	public void processHud(MouseEvent arg0){
 		int mouseX = arg0.getX();
 		int mouseY = arg0.getY();
-		if(isSelected){
+		if(isSelected && aircraft != null){
 			if(aircraft.getFlight() == FLIGHT.ARRIVAL){
 				if(mouseX >= decAlt.getMinX() && mouseX <= decAlt.getMaxX() 
 						&& mouseY >= decAlt.getMinY() && mouseY <= decAlt.getMaxY()){

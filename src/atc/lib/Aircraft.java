@@ -30,7 +30,7 @@ public class Aircraft extends Entity{
 	private double climbMax = 2.5;		//	Max climb rate in thousands [Feet:Minute]
 	private double distTraveled = 0.0;	//	Used for flight history additions. 
 	private double holdTraveled = 0.0;	//	Used for flight holding patterns
-	private double rundTraveled = 0.0;	//	Used to takeoff calculating distance from runway.
+	private double rundTraveled = 0.0;	//	Used for takeoff calculating distance from runway
 	
 	private int accelCur = 0;			//	Current acceleration
 	private int accelMax = 5;			//	Max acceleration
@@ -506,10 +506,10 @@ public class Aircraft extends Entity{
 					instruction = "";
 				}
 			}
-			if(altCurrent >= 14){
+			if(altCurrent >= 13){
 				flight = FLIGHT.CRUISE;
-				kiasDesired = 280;
-				altDesired = rand.nextInt(14) + 30;
+				kiasDesired = 260;
+				altDesired = rand.nextInt(13) + 30;
 				if(fix != null){
 					Airport.getScoreArray()[SCORE.HANDOFF.getSID()]++;
 					Airport.getScoreArray()[SCORE.PLYRSKILL.getSID()]++;

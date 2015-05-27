@@ -1,18 +1,19 @@
 package atc.type;
 
 public enum SCORE {
-	PLYRSCORE 	(0),
-	PLYRSKILL 	(1),
-	ARRIVED 	(2),
-	LANDED		(3),
-	DEPARTED	(4),
-	CRUISEALT	(5),
-	HANDOFF		(6),
-	HANDOFFMISS	(7),
-	OUTOFSEC	(8),
-	SEPINCTIME	(9),
-	PLAYTIME	(10),
-	CRASHED		(11);
+	PLYRSCORE 	(0),		//	Player Score
+	PLYRSKILL 	(1),		//	Player Skill Level
+	ARRIVED 	(2),		//	Number of planes arrived in sector
+	LANDED		(3),		//	Number of planes landed
+	DEPARTED	(4),		//	Number of planes departed from sector
+	CRUISEALT	(5),		//	Number of departed planes reached handoff altitude
+	HANDOFF		(6),		//	Number of handoffs
+	HANDOFFMISS	(7),		//	Number of handoffs missed
+	OUTOFSEC	(8),		//	Number of planes flown out of sector
+	SEPINCTIME	(9),		//	Total amount of time planes did not meet required separation
+	PLAYTIME	(10),		//	Total playtime
+	CRASHED		(11),		//	Number of planes crashed
+	LOCMISS		(12);		//	Number of planes overshot localizer
 	
 	private int sID;
 	
@@ -23,12 +24,5 @@ public enum SCORE {
 	public int getSID(){
 		return this.sID;
 	}
-	
-//	private int handoffs			= 0;		//	Handoffs completed
-//	private int handoffsMissed		= 0;		//	Handoffs missed
-//	private int score				= 0;		//	Player score
-//	private int skill				= 0;		//	Player skill
-//	private int planesLanded		= 0;		//	Aircraft landed
-//	private int planesDeparted		= 0;		//	Aircraft departed
-//	private int planesOutOfSector	= 0;		//	Aircraft out of sector
+
 }

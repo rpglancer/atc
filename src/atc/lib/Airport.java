@@ -37,6 +37,8 @@ public class Airport extends Entity{
 	private int SSLA = 0;						//	Sweeps Since Last Arrival
 	private int SSLD = 0;						//	Sweeps Since Last Departure
 	
+	private int curRunwyAriv = 0;
+	private int curRunwyDept = 0;
 	private int maxRunwyAriv = 2;				//	Maximum number of arrival runways
 	private int maxRunwyDept = 2;				//	Maximum number of departure runways
 	
@@ -46,7 +48,6 @@ public class Airport extends Entity{
 		scoreArray = new int[SCORE.values().length];
 		for(SCORE score : SCORE.values()){
 			scoreArray[score.getSID()] = 0;
-			System.out.println("Score SID = " + score.getSID() + ".");
 		}
 		this.type = TYPE.AIRPORT;
 		this.loc = new Coords(Game.HUDWIDTH + (Game.GAMEWIDTH/2), Game.HEIGHT/2);
@@ -58,8 +59,8 @@ public class Airport extends Entity{
 		genRunwyDept();
 		
 		openRunway(TYPE.RUNWAY_ARRIVE);
-		openRunway(TYPE.RUNWAY_ARRIVE);
 		openRunway(TYPE.RUNWAY_DEPART);
+		openRunway(TYPE.RUNWAY_ARRIVE);
 		openRunway(TYPE.RUNWAY_DEPART);
 		
 		aircraft = new Vector<Aircraft>();
@@ -115,7 +116,6 @@ public class Airport extends Entity{
 		SSLA++;
 		SSLD++;
 		spawn();
-//		chkCruise();
 		chkOOB();
 		chkLanded();
 		chkSeparation();
@@ -209,7 +209,11 @@ public class Airport extends Entity{
 	private void newFlight(FLIGHT flight){
 		if(flight == FLIGHT.ARRIVAL){	
 			int cx,cy;
-			int n = rand.nextInt(4);
+			int n = -1;
+			do{
+				n = rand.nextInt(4);
+			}while(n == LAS);
+			LAS = n;
 			Rectangle s = arrivalSectors.elementAt(n);
 			int hdg = 0;
 			switch(n){
@@ -266,8 +270,8 @@ public class Airport extends Entity{
 			SSLA = 0;
 		}
 		else{
-			int nr = 0;
-			int dr = 0;
+			int nr = 0;		// Num runways available for departure
+			int dr = 0;		// Departing runway
 			for(int i = 0; i < depRunways.size(); i++){
 				if(depRunways.elementAt(i).isOpen())
 					nr++;
@@ -286,6 +290,10 @@ public class Airport extends Entity{
 			Runway d = depRunways.elementAt(dr);
 			Aircraft a = new Aircraft(d.getCoords().getX(), d.getCoords().getY(), d.getHdg(), 0, FLIGHT.TAKEOFF);
 			genFlightInfo(a);
+			int fix = 0;
+			do{
+				fix = rand.nextInt(fixes.size());
+			}while(Calc.distanceNM(loc, fixes.elementAt(fix).getCoords()) < 25);
 			a.setFix(fixes.elementAt(rand.nextInt(fixes.size())));
 			aircraft.addElement(a);
 			Game.registerWithHandler(a);
@@ -329,7 +337,7 @@ public class Airport extends Entity{
 		for(int i = 0; i < maxRunwyAriv; i++){
 			if(arivRunways.size() == 0){
 				int randhdg = rand.nextInt(360);
-				int randdst = (int)(rand.nextInt(5) * Airport.PPNM);
+				int randdst = (int)(rand.nextInt(2) * Airport.PPNM);
 				int placehdg = rand.nextInt(360);
 				Coords pc = Calc.relativeCoords(loc, placehdg, randdst);
 				r = new Runway(pc.getX(), pc.getY(), randhdg, TYPE.RUNWAY_ARRIVE);
@@ -353,13 +361,17 @@ public class Airport extends Entity{
 	private void genRunwyDept(){
 		Runway r;
 		for(int i = 0; i < maxRunwyDept; i++){
-			do{
-				int randhdg = rand.nextInt(360);
-				int randdst = (int)(rand.nextInt(5) * Airport.PPNM);
-				int placehdg = rand.nextInt(360);
-				Coords placeCoords = Calc.relativeCoords(loc, placehdg, randdst);
-				r = new Runway(placeCoords.getX(), placeCoords.getY(), randhdg, TYPE.RUNWAY_DEPART);
-			}while(checkRunwayConflict(r));
+			int randhdg = arivRunways.elementAt(0).getHdg();
+//			int randhdg = arivRunways.elementAt(0).getHdg() - 180;
+//			if(randhdg < 0) randhdg+=360;
+			int randdst = (int)(2.5 * PPNM);
+			int placehdg = arivRunways.elementAt(0).getHdg() + 90;
+			if(depRunways.size() > 0)
+				placehdg = arivRunways.elementAt(0).getHdg() - 90;
+			if(placehdg >= 360) placehdg -=360;
+			if(placehdg < 0) placehdg +=360;
+			Coords pc = Calc.relativeCoords(loc, placehdg, randdst);
+			r = new Runway(pc.getX(), pc.getY(), randhdg, TYPE.RUNWAY_DEPART);
 			availRunways.addElement(r);
 			depRunways.addElement(r);
 		}
@@ -376,6 +388,7 @@ public class Airport extends Entity{
 					continue;
 				else{
 					arivRunways.elementAt(i).open();
+					curRunwyAriv++;
 					return;
 				}	
 			}
@@ -386,6 +399,7 @@ public class Airport extends Entity{
 					continue;
 				else{
 					depRunways.elementAt(i).open();
+					curRunwyDept++;
 					return;
 				}
 			}

@@ -37,6 +37,7 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	public void mousePressed(MouseEvent arg0){
 		switch(arg0.getButton()){
 		case MouseEvent.BUTTON1:
+			ent = null;
 			if(arg0.getX() >= 0 && arg0.getX() <= Game.HUDWIDTH &&
 			arg0.getY() >= 0 && arg0.getY() <= Game.HUDHEIGHT){
 				handler.getHud().processHud(arg0);

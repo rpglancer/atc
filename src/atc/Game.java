@@ -108,20 +108,26 @@ public class Game extends Canvas implements Runnable{
 		final double amountOfTicks = 1.0/sweepLength;
 		double ns = 1000000000 / amountOfTicks;
 		double delta = 0;
-		long timer = System.currentTimeMillis();
+		double FPSLimiter = 0;
+//		long timer = System.currentTimeMillis();
 		
 		while(running){
 			long now = System.nanoTime();
 			delta += (now - lastTime) / ns;
+			FPSLimiter += (now - lastTime) / 30;
 			lastTime = now;
 			if(delta >= 1){
 				tick();
 				delta--;
 			}
-			if(System.currentTimeMillis() - timer > 1000){
-				timer += 1000;
+//			if(System.currentTimeMillis() - timer > 1000){
+//				timer += 1000;
+//			}
+			if(FPSLimiter >= 60){
+				render();
+				FPSLimiter = 0;
 			}
-			render();
+			
 		}
 		stop();	
 	}
