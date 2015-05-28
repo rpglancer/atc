@@ -79,7 +79,7 @@ public class Draw {
 	public static void centeredsquare(Graphics g, Coords coords, double half, Color color, float stroke){
 		BasicStroke acs = new BasicStroke(stroke);
 		Rectangle rect = new Rectangle((int)(coords.getX() - half), (int)(coords.getY() - half), (int)(half * 2), (int)(half * 2));
-		rect.setFrameFromCenter(coords.getX(), coords.getY(), coords.getX() - half, coords.getY() - half);
+		//rect.setFrameFromCenter(coords.getX(), coords.getY(), coords.getX() - half, coords.getY() - half);
 		
 		Graphics2D g2d = (Graphics2D) g;
 		Color prevC = g2d.getColor();

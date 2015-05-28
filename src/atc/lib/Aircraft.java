@@ -210,11 +210,13 @@ public class Aircraft extends Entity{
 		else{
 			if(isConflict)
 				g2d.setColor(Color.red);
+			else if(flight == FLIGHT.CRASHING)
+				g2d.setColor(Color.red);
 			else
 				g2d.setColor(Color.green);
 		}
-			
-		Draw.centeredsquare(g, loc, PPNM * 0.25, Color.green, 1.0f);
+		Draw.centeredsquare(g, loc, 2, Color.green, 1.0f);
+//		Draw.centeredsquare(g, loc, (int)(PPNM * 0.25), Color.green, 1.0f);
 		Draw.centeredcircle(g, loc, 1*PPNM, g2d.getColor());
 		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
 		Draw.flightinfo(g, this);
@@ -331,6 +333,8 @@ public class Aircraft extends Entity{
 		}
 		else{
 			climbCurrent = -climbMax;
+			if(flight == FLIGHT.CRASHING)
+				climbCurrent = -5.0;
 			altCurrent += getFPS();
 			if(altCurrent < altDesired){
 				altCurrent = altDesired;
@@ -514,6 +518,10 @@ public class Aircraft extends Entity{
 			}
 			if(isHolding)
 				flyHold();
+			break;
+		case CRASHING:
+			this.setAltitudeDesired(0);
+			this.setVelocityDesired(300);
 			break;
 		case CRUISE:
 			break;

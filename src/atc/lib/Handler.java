@@ -115,8 +115,8 @@ public class Handler {
 						Aircraft a = (Aircraft)ent;
 						if(a.getFlight() == FLIGHT.ARRIVAL || a.getFlight() == FLIGHT.HANDOFF_AR || 
 								a.getFlight() == FLIGHT.HANDOFF_DE || a.getFlight() == FLIGHT.DEPARTURE){
-							ent.select();
-							getHud().select((Aircraft) ent);
+				//			ent.select();
+				//			getHud().select((Aircraft) ent);
 							return ent;
 						}
 					}

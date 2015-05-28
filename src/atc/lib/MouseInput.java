@@ -5,6 +5,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import atc.Game;
+import atc.type.FLIGHT;
 import atc.type.TYPE;
 
 public class MouseInput implements MouseMotionListener, MouseListener{
@@ -45,6 +46,10 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 				if(ent != null) ent.deselect();
 				ent = null;
 				ent = handler.retrieve(new Coords(arg0.getX(),arg0.getY()));
+				if(ent != null && ent.type==TYPE.AIRCRAFT){
+					ent.select();//new
+					handler.getHud().select((Aircraft)ent);
+				}
 				if(ent == null)handler.getHud().deselect();
 			}
 			break;
@@ -82,7 +87,8 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 						a.setFixHdg((int)Calc.relativeBearing(pressed, at));
 				}
 				else{
-					a.setHeadingDesired((int)Calc.relativeBearing(pressed, at));
+					if(a.getFlight() == FLIGHT.ARRIVAL)
+						a.setHeadingDesired((int)Calc.relativeBearing(pressed, at));
 				}
 			}
 		}

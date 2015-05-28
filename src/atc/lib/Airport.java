@@ -119,6 +119,7 @@ public class Airport extends Entity{
 		chkOOB();
 		chkLanded();
 		chkSeparation();
+		chkCrash();
 	}
 
 	@Override
@@ -127,6 +128,22 @@ public class Airport extends Entity{
 	}
 	
 	private void chkCrash(){
+		for(int i = 0; i < aircraft.size(); i++){
+			if(!aircraft.elementAt(i).isConflict())
+				continue;
+			for(int n = 0; n < aircraft.size(); n++){
+				if(!aircraft.elementAt(n).isConflict())
+					continue;
+				if(aircraft.elementAt(n).equals(aircraft.elementAt(i)))
+					continue;
+				if((int)aircraft.elementAt(i).getCoords().getX() == (int)aircraft.elementAt(n).getCoords().getX() &&
+						(int)aircraft.elementAt(i).getCoords().getY() == (int)aircraft.elementAt(n).getCoords().getY() &&
+						Math.abs(aircraft.elementAt(i).getAltCur() - aircraft.elementAt(n).getAltCur()) <= 0.1){
+					aircraft.elementAt(i).setFlight(FLIGHT.CRASHING);
+					aircraft.elementAt(n).setFlight(FLIGHT.CRASHING);
+				}
+			}
+		}
 		for(int i = 0; i < aircraft.size(); i++){
 			if(aircraft.elementAt(i).getFlight() != FLIGHT.CRASHING)
 				continue;
@@ -289,7 +306,6 @@ public class Airport extends Entity{
 			}
 			Runway d = depRunways.elementAt(dr);
 			Aircraft a = new Aircraft(new Coords(d.getCoords().getX(), d.getCoords().getY()), d.getHdg(), 0, FLIGHT.TAKEOFF);
-//			Aircraft a = new Aircraft(d.getCoords().getX(), d.getCoords().getY(), d.getHdg(), 0, FLIGHT.TAKEOFF);
 			genFlightInfo(a);
 			int fix = 0;
 			do{
