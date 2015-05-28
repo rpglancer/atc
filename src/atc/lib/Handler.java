@@ -14,7 +14,7 @@ import atc.type.TYPE;
 public class Handler {
 	private LinkedList<Entity> e = new LinkedList<Entity>();
 	private static Vector<Localizer> localizers = new Vector<Localizer>();
-	private Entity entity;
+//	private Entity entity;
 	
 	public void add(Entity entity){
 		if(entity.type == TYPE.LOCALIZER){
@@ -72,6 +72,8 @@ public class Handler {
 	}
 	
 	public void tick(){
+		System.out.println("--------------------------");
+		listAircraft();
 		for(int i = 0; i < e.size(); i++){
 			e.get(i).tick();
 		}
@@ -105,6 +107,40 @@ public class Handler {
 	
 	public Entity retrieve(Coords coords){
 		for(int i = 0; i < e.size(); i++){
+			Entity ent = e.get(i);
+			if(ent.getCoords() == null || ent.getArea() == null)
+				continue;
+			else{
+				switch(ent.type){
+				case AIRCRAFT:		
+					if(coords.getX() >= ent.getArea().getMinX() && coords.getX() <= ent.getArea().getMaxX() &&
+					coords.getY() >= ent.getArea().getMinY() && coords.getY() <= ent.getArea().getMaxY()){
+						Aircraft a = (Aircraft)ent;
+						if(a.getFlight() == FLIGHT.ARRIVAL || a.getFlight() == FLIGHT.HANDOFF_AR || 
+								a.getFlight() == FLIGHT.HANDOFF_DE || a.getFlight() == FLIGHT.DEPARTURE){
+							ent.select();
+							getHud().select((Aircraft) ent);
+							return ent;
+						}
+					}
+					break;
+				case FIX:
+					Fix f = (Fix)ent;
+					if(coords.getX() >= ent.getArea().getMinX() && coords.getX() <= ent.getArea().getMaxX()
+					&& coords.getY() >= ent.getArea().getMinY() && coords.getY() <= ent.getArea().getMaxY()){
+						return f;
+					}
+					break;
+				default:
+					continue;
+				}
+			}
+		}
+		return null;
+	}
+/*	
+	public Entity retrieve(Coords coords){
+		for(int i = 0; i < e.size(); i++){
 			entity = e.get(i);
 			if(entity.getCoords() == null || entity.getArea() == null)
 				continue;
@@ -134,9 +170,18 @@ public class Handler {
 						
 					continue;			
 				}
-
 			}
 		}
 		return null;
+	}
+	*/
+
+	private void listAircraft(){
+		for(int i = 0; i < e.size(); i++){
+			if(e.get(i).type == TYPE.AIRCRAFT){
+				Aircraft a = (Aircraft)e.get(i);
+				System.out.println(a + " - " + a.getFlight());
+			}
+		}
 	}
 }

@@ -56,7 +56,6 @@ public class Draw {
 	public static void cdend(Graphics g, Aircraft a){
 		if(a == null)return;
 		Color prevC = g.getColor();
-	//	double dist = a.getTTC() * Aircraft.PPNM;
 		double dist = (a.getTTC() * 12 * a.getKPS() * Aircraft.PPNM);
 		Coords fin = Calc.relativeCoords(a.getCoords(), a.getHdgCur(), dist);
 		int blh = a.getHdgCur() + 90;
@@ -165,8 +164,7 @@ public class Draw {
 		Color prevC = g.getColor();
 		g.setColor(color);
 		g.drawLine((int)begin.getX(), (int)begin.getY(), (int)end.getX(), (int)end.getY());
-		g.setColor(prevC);
-		
+		g.setColor(prevC);	
 	}
 	
 	public static void score(Graphics g, Airport a){
@@ -181,17 +179,6 @@ public class Draw {
 	int midX = Game.HUDWIDTH/2;
 	int y = Game.HUDHEIGHT + fm.getHeight();
 	int x = 0;
-//	PLYRSCORE 	(0),
-//	PLYRSKILL 	(1),
-//	ARRIVED 	(2),
-//	LANDED		(3),
-//	DEPARTED	(4),
-//	CRUISEALT	(5),
-//	HANDOFF		(6),
-//	HANDOFFMISS	(7),
-//	OUTOFSEC	(8),
-//	SEPINCTIME	(9),
-//	PLAYTIME	(10);
 	g2d.drawString("Score: " + Airport.getScoreArray()[SCORE.PLYRSCORE.getSID()], x, y);
 	y+=fm.getHeight();
 	g2d.drawString("Skill: " + Airport.getScoreArray()[SCORE.PLYRSKILL.getSID()], x, y);

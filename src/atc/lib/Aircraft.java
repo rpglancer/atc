@@ -533,7 +533,6 @@ public class Aircraft extends Entity{
 				altDesired = rand.nextInt(13) + 30;
 				if(fix != null){
 					Airport.getScoreArray()[SCORE.HANDOFF.getSID()]++;
-					Airport.getScoreArray()[SCORE.PLYRSKILL.getSID()]++;
 					Airport.getScoreArray()[SCORE.PLYRSCORE.getSID()]+=10;
 				}
 				else{
@@ -606,7 +605,6 @@ public class Aircraft extends Entity{
 	}
 	
 	private void throttle(){
-		tasCurrent = kiasToTas(kiasCurrent);
 		if(kiasDesired > kiasCurrent){
 			if(kiasDesired - kiasCurrent >= accelMax){
 				accelCur = accelMax;
@@ -639,6 +637,7 @@ public class Aircraft extends Entity{
 		kiasCurrent += accelCur;
 		if(kiasCurrent < 0)
 			kiasCurrent = 0;
+		tasCurrent = kiasToTas(kiasCurrent);
 	}
 
 	private void updateHistory(){

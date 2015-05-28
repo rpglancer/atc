@@ -14,9 +14,9 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	private Handler handler;
 
 	public MouseInput(Game game, Handler handler){
-//		System.out.println("New MouseInput!");
 		this.handler = handler;
 	};
+	
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
 	}
@@ -37,13 +37,13 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	public void mousePressed(MouseEvent arg0){
 		switch(arg0.getButton()){
 		case MouseEvent.BUTTON1:
-			if(ent != null) ent.deselect();
-			ent = null;
 			if(arg0.getX() >= 0 && arg0.getX() <= Game.HUDWIDTH &&
 			arg0.getY() >= 0 && arg0.getY() <= Game.HUDHEIGHT){
 				handler.getHud().processHud(arg0);
 			}
 			else{
+				if(ent != null) ent.deselect();
+				ent = null;
 				ent = handler.retrieve(new Coords(arg0.getX(),arg0.getY()));
 				if(ent == null)handler.getHud().deselect();
 			}
@@ -57,43 +57,18 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 					if(e != null && e.type == TYPE.FIX){
 						Fix f = (Fix)e;
 						pressed = temp;
+						at = a.getCoords();
 						a.setFix(f);
 					}
 					else{
 						pressed = a.getCoords();
+						at = new Coords(arg0.getX(), arg0.getY());
 						a.setFix(null);
 						a.setFixHdg(-1);
 					}
 				}
 			}
 			break;
-
-		/*
-		case MouseEvent.BUTTON3:
-			if(ent != null && ent.type == TYPE.AIRCRAFT){
-				Aircraft a = (Aircraft)ent;
-				if(a.getFlight() == FLIGHT.ARRIVAL){
-					Coords temp = new Coords(arg0.getX(),arg0.getY());
-					if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK){
-						Entity e = handler.retrieve(temp);
-						if(e != null && e.type == TYPE.FIX){
-							Fix f = (Fix)e;
-							pressed = temp;
-							a.setFix(f);
-						}
-						else{
-							if(a.getFlight() == FLIGHT.ARRIVAL){
-								pressed = a.getCoords();
-								a.setFix(null);
-								a.setFixHdg(-1);
-								a.setHeadingDesired(temp);
-							}
-						}
-					}
-				}
-			}
-			break;
-			*/
 		}
 	}
 
@@ -101,7 +76,6 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	public void mouseReleased(MouseEvent arg0) {
 		if(ent != null && ent.type == TYPE.AIRCRAFT){
 			Aircraft a = (Aircraft) ent;
-			at = new Coords(arg0.getX(), arg0.getY());
 			if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getButton() == MouseEvent.BUTTON3){
 				if(handler.retrieve(pressed).type == TYPE.FIX){
 					if(Calc.distanceNM(pressed, at) >= 1)
@@ -112,17 +86,6 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 				}
 			}
 		}
-		/*
-		if(ent != null && ent.type == TYPE.AIRCRAFT){
-			if(arg0.getModifiers() == MouseEvent.META_MASK && arg0.getButton() == MouseEvent.BUTTON3 && pressed != null){
-				Aircraft a = (Aircraft)ent;
-				Coords temp = new Coords(arg0.getX(), arg0.getY());
-				if(Calc.distanceNM(pressed, temp) >= 1){
-					a.setFixHdg((int)Calc.relativeBearing(pressed, temp));
-				}
-			}
-		}
-		*/
 		pressed = null;
 		at = null;
 	}

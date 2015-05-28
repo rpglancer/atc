@@ -114,7 +114,8 @@ public class Game extends Canvas implements Runnable{
 			lastTime = now;
 			if(delta >= 1){
 				tick();
-				delta--;
+//				delta--;
+				delta = 0;
 			}
 			if(System.currentTimeMillis() - timer > 1000){
 				timer += 1000;
