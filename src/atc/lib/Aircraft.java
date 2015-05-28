@@ -521,7 +521,8 @@ public class Aircraft extends Entity{
 			if(fix != null){
 				setHeadingDesired(fix.getCoords());
 				if(Calc.distanceNM(loc, fix.getCoords()) <= 0.5 && fixHeading >= 0){
-					setHeadingDesired(fixHeading);
+					headingDesired = headingCurrent;
+//					setHeadingDesired(fixHeading);
 					fix = null;
 					fixHeading = -1;
 					instruction = "";

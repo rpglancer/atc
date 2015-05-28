@@ -14,7 +14,6 @@ import atc.type.TYPE;
 public class Handler {
 	private LinkedList<Entity> e = new LinkedList<Entity>();
 	private static Vector<Localizer> localizers = new Vector<Localizer>();
-//	private Entity entity;
 	
 	public void add(Entity entity){
 		if(entity.type == TYPE.LOCALIZER){
@@ -72,8 +71,6 @@ public class Handler {
 	}
 	
 	public void tick(){
-		System.out.println("--------------------------");
-		listAircraft();
 		for(int i = 0; i < e.size(); i++){
 			e.get(i).tick();
 		}
@@ -138,44 +135,8 @@ public class Handler {
 		}
 		return null;
 	}
-/*	
-	public Entity retrieve(Coords coords){
-		for(int i = 0; i < e.size(); i++){
-			entity = e.get(i);
-			if(entity.getCoords() == null || entity.getArea() == null)
-				continue;
-			else{
-				switch(entity.type){
-				case AIRCRAFT:		
-					if(coords.getX() >= entity.getArea().getMinX() && coords.getX() <= entity.getArea().getMaxX() &&
-					coords.getY() >= entity.getArea().getMinY() && coords.getY() <= entity.getArea().getMaxY()){
-						Aircraft temp = (Aircraft)entity;
-						if(temp.getFlight() == FLIGHT.ARRIVAL || temp.getFlight() == FLIGHT.HANDOFF_AR || 
-								temp.getFlight() == FLIGHT.HANDOFF_DE || temp.getFlight() == FLIGHT.DEPARTURE){
-							entity.select();
-							getHud().select((Aircraft) entity);
-							return entity;
-						}
-					}
-				case FIX:
-					if(coords.getX() >= entity.getArea().getMinX() && coords.getX() <= entity.getArea().getMaxX()
-					&& coords.getY() >= entity.getArea().getMinY() && coords.getY() <= entity.getArea().getMaxY()){
-						return entity;
-					}
-					
-				default:
-					if(entity != null){
-					//	getHud().deselect();
-					}
-						
-					continue;			
-				}
-			}
-		}
-		return null;
-	}
-	*/
 
+	@SuppressWarnings("unused")
 	private void listAircraft(){
 		for(int i = 0; i < e.size(); i++){
 			if(e.get(i).type == TYPE.AIRCRAFT){

@@ -288,7 +288,7 @@ public class Airport extends Entity{
 				}
 			}
 			Runway d = depRunways.elementAt(dr);
-			Aircraft a = new Aircraft(d.getCoords(), d.getHdg(), 0, FLIGHT.TAKEOFF);
+			Aircraft a = new Aircraft(new Coords(d.getCoords().getX(), d.getCoords().getY()), d.getHdg(), 0, FLIGHT.TAKEOFF);
 //			Aircraft a = new Aircraft(d.getCoords().getX(), d.getCoords().getY(), d.getHdg(), 0, FLIGHT.TAKEOFF);
 			genFlightInfo(a);
 			int fix = 0;
