@@ -6,8 +6,8 @@ package atc.lib;
  *
  */
 public class Convert {
-	public static int ticksToSeconds(int ticks){
-		return ticks * 5;
+	public static int ticksToSeconds(float ticks){
+		return (int)(ticks * 5);
 	}
 	
 	/**

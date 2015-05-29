@@ -19,20 +19,13 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	};
 	
 	@Override
-	public void mouseClicked(MouseEvent arg0) {
-	}
+	public void mouseClicked(MouseEvent arg0) {}
 
 	@Override
-	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void mouseEntered(MouseEvent arg0) {}
 
 	@Override
-	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void mouseExited(MouseEvent arg0) {}
 
 	@Override
 	public void mousePressed(MouseEvent arg0){
@@ -108,10 +101,7 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 	}
 
 	@Override
-	public void mouseMoved(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void mouseMoved(MouseEvent arg0) {}
 
 	public static Coords[] mouseCoords(){
 		Coords[] mc = {pressed, at};

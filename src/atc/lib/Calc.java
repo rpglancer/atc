@@ -2,6 +2,8 @@ package atc.lib;
 
 import java.awt.geom.Line2D;
 
+import atc.type.SCORE;
+
 /**
  * Class containing useful static mathematical methods.
  * @author Matt Bangert
@@ -139,7 +141,7 @@ public class Calc {
 		return new Coords(xi, yi);	
 	}	
 
-	public static int[] time(int seconds){
+	public static int[] time(float seconds){
 		int[] time = {0,0,0};
 		if(seconds >= 3600){
 			do{
@@ -161,5 +163,13 @@ public class Calc {
 			}while(seconds > 0);
 		}
 		return time;
+	}
+
+	public static void skill(float[] score){
+		//(arrived + landed) + (departed + cruisealt) - (handoffmiss *2) - (outofsec * 3) - (crashed * 10) - (locmiss) / (arrived + departed)
+		float sk = (score[SCORE.ARRIVED.getSID()] + score[SCORE.LANDED.getSID()]) + (score[SCORE.DEPARTED.getSID()] + score[SCORE.CRUISEALT.getSID()]);
+		sk -= ((score[SCORE.HANDOFFMISS.getSID()] * 2) + (score[SCORE.OUTOFSEC.getSID()] * 3) + (score[SCORE.CRASHED.getSID()] * 10) + score[SCORE.LOCMISS.getSID()]);
+		sk /= (score[SCORE.ARRIVED.getSID()] + score[SCORE.DEPARTED.getSID()]);
+		score[SCORE.PLYRSKILL.getSID()] = sk;
 	}
 }

@@ -44,10 +44,10 @@ public class Airport extends Entity{
 	private int maxRunwyAriv = 2;				//	Maximum number of arrival runways
 	private int maxRunwyDept = 2;				//	Maximum number of departure runways
 	
-	private static int[] scoreArray = null;
+	private static float[] scoreArray = null;
 
 	public Airport(){
-		scoreArray = new int[SCORE.values().length];
+		scoreArray = new float[SCORE.values().length];
 		for(SCORE score : SCORE.values()){
 			scoreArray[score.getSID()] = 0;
 		}
@@ -95,7 +95,7 @@ public class Airport extends Entity{
 		return delivery;
 	}
 	
-	public static int[] getScoreArray(){
+	public static float[] getScoreArray(){
 		return scoreArray;
 	}
 	
@@ -128,6 +128,7 @@ public class Airport extends Entity{
 		chkLanded();
 		chkSeparation();
 		chkCrash();
+		Calc.skill(scoreArray);
 	}
 
 	@Override
@@ -558,28 +559,31 @@ public class Airport extends Entity{
 	}
 	
 	private void spawn(){
-		int ps = scoreArray[SCORE.PLYRSKILL.getSID()];
+		float ps = scoreArray[SCORE.PLYRSKILL.getSID()];
 		int apm = 1;
 		int dpm = 1;
-		if(ps >=5){
+		if(ps >=1.5){
+			apm = 2;
+			dpm = 1;
+		}
+		else if(ps >=3){
 			apm = 2;
 			dpm = 2;
 		}
-		else if(ps >=10){
+		else if(ps >=6){
+			apm = 3;
+			dpm = 2;
+		}
+		else if(ps >= 12){
 			apm = 3;
 			dpm = 3;
 		}
-		else if(ps >=15){
-			apm = 4;
-			dpm = 4;
-		}
-		if(SSLA == 60/apm){
+		if(SSLA >= 60/apm){
 			newFlight(FLIGHT.ARRIVAL);
 			SSLA = 0;
 		}
-		if(SSLD == 60/dpm){
+		if(SSLD >= 60/dpm){
 			newFlight(FLIGHT.DELIVERY);
-//			newFlight(FLIGHT.DEPARTURE);
 			SSLD = 0;
 		}
 	}
