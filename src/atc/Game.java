@@ -30,7 +30,7 @@ public class Game extends Canvas implements Runnable{
 	
 	private static final int VER_MAJOR = 0;
 	private static final int VER_MINOR = 8;
-	private static final int VER_PATCH = 3;
+	private static final int VER_PATCH = 4;
 	
 	private static final long serialVersionUID = 6797603345816214805L;
 	

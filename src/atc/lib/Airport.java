@@ -9,6 +9,7 @@ import atc.Game;
 import atc.display.Draw;
 import atc.display.Text;
 import atc.type.FLIGHT;
+import atc.type.LAYOUT;
 import atc.type.SCORE;
 import atc.type.TYPE;
 
@@ -136,9 +137,10 @@ public class Airport extends Entity{
 					continue;
 				if(aircraft.elementAt(n).equals(aircraft.elementAt(i)))
 					continue;
-				if((int)aircraft.elementAt(i).getCoords().getX() == (int)aircraft.elementAt(n).getCoords().getX() &&
-						(int)aircraft.elementAt(i).getCoords().getY() == (int)aircraft.elementAt(n).getCoords().getY() &&
-						Math.abs(aircraft.elementAt(i).getAltCur() - aircraft.elementAt(n).getAltCur()) <= 0.1){
+				double dx = Math.abs(aircraft.elementAt(i).getCoords().getX() - aircraft.elementAt(n).getCoords().getX());
+				double dy = Math.abs(aircraft.elementAt(i).getCoords().getY() - aircraft.elementAt(n).getCoords().getY());
+				double da = Math.abs(aircraft.elementAt(i).getAltCur() - aircraft.elementAt(n).getAltCur());
+				if(dx <= 1 && dy <= 1 && da <= 0.1){
 					aircraft.elementAt(i).setFlight(FLIGHT.CRASHING);
 					aircraft.elementAt(n).setFlight(FLIGHT.CRASHING);
 				}
@@ -150,7 +152,6 @@ public class Airport extends Entity{
 			if(aircraft.elementAt(i).getAltCur() <= 0){
 				endFlight(aircraft.elementAt(i));
 				scoreArray[SCORE.PLYRSCORE.getSID()] -= 1000;
-				scoreArray[SCORE.PLYRSKILL.getSID()] -= 10;
 			}
 		}
 	}
@@ -336,59 +337,35 @@ public class Airport extends Entity{
 	}
 	
 	private void genFlightInfo(Aircraft a){
-		@Deprecated
-		int mo = rand.nextInt(Text.airTypes.length);
 		int op = rand.nextInt(Text.airNames.length);
 		int fn;
 		do{
 			fn = rand.nextInt(999) + 100;
 		}while(checkFlightNoConflict(fn));
-		a.setFlightInfo(Text.airNames[op], fn + "", Text.airTypes[mo]);
+		a.setFlightInfo(Text.airNames[op], fn + "");
 	}
 	
-	/**
-	 * Method to randomly generate runways for Arriving aircraft
-	 */
 	private void genRunwyAriv(){
 		Runway r;
-		for(int i = 0; i < maxRunwyAriv; i++){
-			if(arivRunways.size() == 0){
-				int randhdg = rand.nextInt(360);
-				int randdst = (int)(rand.nextInt(2) * Airport.PPNM);
-				int placehdg = rand.nextInt(360);
-				Coords pc = Calc.relativeCoords(loc, placehdg, randdst);
-				r = new Runway(pc.getX(), pc.getY(), randhdg, TYPE.RUNWAY_ARRIVE);
+		for(LAYOUT l : LAYOUT.values()){
+			for(int i = 0; i < l.getRwyA(); i++){
+				Coords pc = Calc.relativeCoords(loc, l.getRwyAHT()[i], (l.getRwyADT()[i] * PPNM));
+				r = new Runway(pc, l.getRwyAHdg()[i], l.getRwyAName()[i], TYPE.RUNWAY_ARRIVE);
+				availRunways.addElement(r);
+				arivRunways.addElement(r);
 			}
-			else{
-				int hdg = arivRunways.elementAt(0).getHdg();
-				int randdst = (int)(2.5 * Airport.PPNM);
-				int placeHdg = arivRunways.elementAt(0).getHdg() - 90;
-				if(placeHdg < 0) placeHdg += 360;
-				Coords pc = Calc.relativeCoords(arivRunways.elementAt(arivRunways.size() - 1).getCoords(), placeHdg, randdst);
-				r = new Runway(pc.getX(), pc.getY(), hdg, TYPE.RUNWAY_ARRIVE);
-			}
-			availRunways.addElement(r);
-			arivRunways.addElement(r);
 		}
 	}
 	
-	/**
-	 * Method to generate runways for departing aircraft.
-	 */
 	private void genRunwyDept(){
 		Runway r;
-		for(int i = 0; i < maxRunwyDept; i++){
-			int randhdg = arivRunways.elementAt(0).getHdg();
-			int randdst = (int)(2.5 * PPNM);
-			int placehdg = arivRunways.elementAt(0).getHdg() + 90;
-			if(depRunways.size() > 0)
-				placehdg = arivRunways.elementAt(0).getHdg() - 90;
-			if(placehdg >= 360) placehdg -=360;
-			if(placehdg < 0) placehdg +=360;
-			Coords pc = Calc.relativeCoords(loc, placehdg, randdst);
-			r = new Runway(pc.getX(), pc.getY(), randhdg, TYPE.RUNWAY_DEPART);
-			availRunways.addElement(r);
-			depRunways.addElement(r);
+		for(LAYOUT l : LAYOUT.values()){
+			for(int i = 0; i < l.getRwyD(); i++){
+				Coords pc = Calc.relativeCoords(loc, l.getRwyDHT()[i], l.getRwyDDT()[i] * PPNM);
+				r = new Runway(pc, l.getRwyDHdg()[i], l.getRwyDName()[i], TYPE.RUNWAY_DEPART);
+				availRunways.addElement(r);
+				depRunways.addElement(r);
+			}
 		}
 	}
 	
@@ -469,7 +446,7 @@ public class Airport extends Entity{
 		}
 		return false;
 	}
-	
+	@Deprecated
 	private boolean checkRunwayConflict(Runway rwy){
 		if(availRunways.size() == 0)
 			return false;
@@ -519,8 +496,7 @@ public class Airport extends Entity{
 						int dor = 0 + rwy.getHdg();
 						int dot = 0 + tgt.getHdg();
 						int doa = Math.abs(dor-dot);
-						if(doa < 45) return true;
-						
+						if(doa < 45) return true;		
 					}
 				}
 			}

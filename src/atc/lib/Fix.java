@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import atc.display.Fonts;
-import atc.display.Text;
 import atc.type.TYPE;
 
 public class Fix extends Entity{

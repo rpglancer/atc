@@ -171,7 +171,7 @@ public class Hud extends Entity{
 		if(isSelected){
 			Draw.box(g, rect, 2, Color.green, Color.black);
 			
-			if(aircraft.getFlight() == FLIGHT.HANDOFF_AR || aircraft.getFlight() == FLIGHT.HANDOFF_DE){
+			if(temp.getFlight() == FLIGHT.HANDOFF_AR || temp.getFlight() == FLIGHT.HANDOFF_DE){
 				Draw.box(g, hndoff, 2, Color.green, Color.black);
 				g.setColor(Color.green);
 				Text.boxText(g, Fonts.hudNumber, hndoff, HALIGN.CENTER, VALIGN.MIDDLE, "CONTACT");

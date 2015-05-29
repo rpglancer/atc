@@ -48,8 +48,6 @@ public class Aircraft extends Entity{
 	private Line2D direction;			//	Magical invisible line that extends in the direction the aircraft is flying.
 	private Localizer local = null;		//	Localizer the aircraft is using for landing.
 	private String airline;				//	Aircraft Operator
-	@Deprecated
-	private String model;				//	Model of aircraft
 	private String flightNumber;		//	Flight number
 	private String instruction;			//	Current instruction [if applicable]
 	private Vector<Coords> history;		//	Flight history coordinates
@@ -151,10 +149,6 @@ public class Aircraft extends Entity{
 	
 	public Vector<Coords> getHistory(){
 		return history;
-	}
-	
-	public String getModel(){
-		return model;
 	}
 	
 	public String getName(){
@@ -273,10 +267,9 @@ public class Aircraft extends Entity{
 		this.flight = flight;
 	}
 	
-	public void setFlightInfo(String oper, String number, String model){
+	public void setFlightInfo(String oper, String number){
 		airline = oper;
 		flightNumber = number;
-		this.model = model;
 	}
 	
 	public void setHeadingDesired(Coords coords){

@@ -16,8 +16,27 @@ public class Runway extends Entity{
 	private Localizer localizer;
 	private boolean isOpen = false;
 	private double heading;
-	private int length;					// Kind of redundant now that Runway has Line2D for the runway itself.
+	private int length;					//	Mite still b useful
+	private String ID;
 
+	public Runway(Coords c, int heading, String id, TYPE type){
+		loc = c;
+		this.heading = heading;
+		ID = id;
+		this.type = type;
+		length = (int)(2.5 * PPNM);
+		Coords ec = Calc.relativeCoords(loc, heading, length);
+		runwayPath = new Line2D.Double(loc.getX(), loc.getY(), ec.getX(), ec.getY());
+		if(this.type == TYPE.RUNWAY_ARRIVE){
+			localizer = new Localizer(this);
+		}
+		if(this.type == TYPE.RUNWAY_DEPART){
+			ec = Calc.relativeCoords(loc, heading, PPNM*8);
+			departPath = new Line2D.Double(loc.getX(),loc.getY(),ec.getX(),ec.getY());
+		}
+	}
+
+	@Deprecated
 	public Runway(double x, double y, double heading, TYPE type){
 		loc = new Coords(x, y);
 		this.heading = heading;
@@ -50,6 +69,10 @@ public class Runway extends Entity{
 	
 	public boolean isOpen(){
 		return isOpen;
+	}
+	
+	public String getID(){
+		return ID;
 	}
 	
 	public Line2D getDepartPath(){

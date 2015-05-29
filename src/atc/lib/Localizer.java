@@ -25,7 +25,8 @@ public class Localizer extends Entity{
 		double x, y, ex, ey;
 		this.rwy = rwy.getCoords();
 		this.hdg = rwy.getHdg();
-		locID = "ILS" + hdg/10;
+//		locID = "ILS" + hdg/10;
+		locID = "ILS" + rwy.getID();
 		x = this.rwy.getX();
 		y = this.rwy.getY();
 		ex = this.rwy.getX() + (PPNM * 18) * Math.sin(Math.toRadians(Convert.reciprocal(this.hdg)));
