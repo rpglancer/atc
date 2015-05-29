@@ -11,6 +11,7 @@ public class Fonts {
 	public static final String fix = Character.toString((char)8710);
 	public static final String flight = Character.toString((char)9674); //9679
 	
+	public static Font delivtext = new Font("Modern", Font.PLAIN, 15);
 	public static Font hudNumber = new Font("Modern", Font.PLAIN, 20);
 	public static Font radarobj = new Font("Consolas", Font.BOLD, 12);
 	public static Font radartext = new Font("Consolas", Font.BOLD, 11);

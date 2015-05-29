@@ -17,12 +17,13 @@ package atc.type;
  */
 public enum FLIGHT {
 	ARRIVAL,		//	Flight is arriving
+	CRASHING,		//	Flight is crashing	
 	CRUISE,			//	Flight is cruising
+	DELIVERY,		//	Clearance delivery
 	DEPARTURE,		//	Flight is departing
 	HANDOFF_AR,		//	Arriving flight is awaiting acknowledgement
 	HANDOFF_DE,		//	Departing flight is awaiting acknowledgement
 	ILS,			//	Flight is on final approach [on the localizer]
 	LANDING,		//	Flight is landing
-	TAKEOFF,		//	Flight is taking off
-	CRASHING;		//	Flight is crashing		
+	TAKEOFF;		//	Flight is taking off	
 }

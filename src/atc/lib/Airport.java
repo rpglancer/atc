@@ -27,6 +27,7 @@ public class Airport extends Entity{
 
 	private Random rand = new Random();
 	private Vector<Aircraft> aircraft;
+	private Vector<Aircraft> delivery;
 	private Vector<Fix> fixes;
 	private Vector<Rectangle> arrivalSectors;	//	Sectors [rectangles] inside which arrivals can spawn
 	private Vector<Runway> availRunways;		//	All runways, only used for checking overlap during placement spawn.
@@ -52,6 +53,7 @@ public class Airport extends Entity{
 		}
 		this.type = TYPE.AIRPORT;
 		this.loc = new Coords(Game.HUDWIDTH + (Game.GAMEWIDTH/2), Game.HEIGHT/2);
+		area = new Rectangle((int)loc.getX() - 2, (int)loc.getY() - 2, 4, 4);
 		arivRunways = new Vector<Runway>();
 		availRunways = new Vector<Runway>();
 		depRunways = new Vector<Runway>();
@@ -65,6 +67,7 @@ public class Airport extends Entity{
 		openRunway(TYPE.RUNWAY_DEPART);
 		
 		aircraft = new Vector<Aircraft>();
+		delivery = new Vector<Aircraft>();
 		
 		arrivalSectors = new Vector<Rectangle>();
 		Rectangle temp = new Rectangle(Game.HUDWIDTH,0,Game.GAMEWIDTH,96);			//	Sector North
@@ -88,6 +91,10 @@ public class Airport extends Entity{
 		return loc;
 	}
 	
+	public Vector<Aircraft> getDeliveries(){
+		return delivery;
+	}
+	
 	public static int[] getScoreArray(){
 		return scoreArray;
 	}
@@ -99,11 +106,11 @@ public class Airport extends Entity{
 	}
 	
 	public void deselect(){
-		
+		isSelected = false;
 	}
 	
 	public void select(){
-		
+		isSelected = true;
 	}
 	
 	public void setCoords(Coords coords){
@@ -126,6 +133,40 @@ public class Airport extends Entity{
 	@Override
 	public Rectangle getArea() {
 		return area;
+	}
+	
+	public void releaseFlight(int index){
+		int nr = 0;
+		int dr = 0;
+		for(int i = 0; i < depRunways.size(); i++){
+			if(depRunways.elementAt(i).isOpen()){
+				nr++;
+			}
+		}
+		if(nr > 1){
+			if(LDR == -1)
+				LDR = 0;
+			else{
+				if(LDR == 0)
+					dr = 1;
+				else
+					dr = 0;
+				LDR = dr;
+			}
+		}
+		else{
+			dr = 0;
+			LDR = dr;
+		}
+		Runway d = depRunways.elementAt(dr);
+		delivery.elementAt(index).setCoords(new Coords(d.getCoords().getX(), d.getCoords().getY()));
+		delivery.elementAt(index).setHeadingCurrent(d.getHdg());
+		delivery.elementAt(index).setHeadingDesired(delivery.elementAt(index).getHdgCur());
+		delivery.elementAt(index).setFlight(FLIGHT.TAKEOFF);
+		aircraft.addElement(delivery.elementAt(index));
+		Game.registerWithHandler(delivery.elementAt(index));
+		scoreArray[SCORE.DEPARTED.getSID()]++;
+		delivery.remove(index);
 	}
 	
 	private void chkCrash(){
@@ -285,7 +326,17 @@ public class Airport extends Entity{
 			aircraft.addElement(a);
 			Game.registerWithHandler(a);
 			scoreArray[SCORE.ARRIVED.getSID()]++;
-			SSLA = 0;
+//			SSLA = 0;
+		}
+		else if(flight == FLIGHT.DELIVERY){
+			Aircraft a = new Aircraft(new Coords(loc.getX(), loc.getY()), 0, 0, FLIGHT.DELIVERY);
+			genFlightInfo(a);
+			int fix = 0;
+			do{
+				fix = rand.nextInt(fixes.size());
+			}while(Calc.distanceNM(loc, fixes.elementAt(fix).getCoords()) < 25);
+			a.setFix(fixes.elementAt(fix));
+			delivery.addElement(a);
 		}
 		else{
 			int nr = 0;		// Num runways available for departure
@@ -312,7 +363,8 @@ public class Airport extends Entity{
 			do{
 				fix = rand.nextInt(fixes.size());
 			}while(Calc.distanceNM(loc, fixes.elementAt(fix).getCoords()) < 25);
-			a.setFix(fixes.elementAt(rand.nextInt(fixes.size())));
+			a.setFix(fixes.elementAt(fix));
+//			a.setFix(fixes.elementAt(rand.nextInt(fixes.size())));
 			aircraft.addElement(a);
 			Game.registerWithHandler(a);
 			scoreArray[SCORE.DEPARTED.getSID()]++;
@@ -446,6 +498,7 @@ public class Airport extends Entity{
 		}
 		return false;
 	}
+
 	@Deprecated
 	private boolean checkRunwayConflict(Runway rwy){
 		if(availRunways.size() == 0)
@@ -520,9 +573,14 @@ public class Airport extends Entity{
 			apm = 4;
 			dpm = 4;
 		}
-		if(SSLA == 60/apm)
+		if(SSLA == 60/apm){
 			newFlight(FLIGHT.ARRIVAL);
-		if(SSLD == 60/dpm)
-			newFlight(FLIGHT.DEPARTURE);
+			SSLA = 0;
+		}
+		if(SSLD == 60/dpm){
+			newFlight(FLIGHT.DELIVERY);
+//			newFlight(FLIGHT.DEPARTURE);
+			SSLD = 0;
+		}
 	}
 }

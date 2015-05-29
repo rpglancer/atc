@@ -42,12 +42,14 @@ public class Text {
 		FontMetrics fm = g.getFontMetrics(f);
 		int y = box.y;
 		int w = box.width;
-		if(va == VALIGN.TOP) y = box.y;
+//		if(va == VALIGN.TOP) y = box.y;
+		if(va == VALIGN.TOP) y += fm.getAscent();
 		if(va == VALIGN.MIDDLE){
 			if(lc == 1) y += (box.height - textHeight(g,f,text)) / 2 + fm.getAscent();
 			else y = box.y + box.height/2 - (textHeight(g,f,text)/2) * lc + (fm.getDescent()/2 * lc);
 		}
-		if(va == VALIGN.BOTTOM) y = box.y + box.height - textHeight(g,f,text) * lc + (fm.getDescent() * lc);
+		if(va == VALIGN.BOTTOM) y = (int)(box.getMaxY() - (textHeight(g,f,text) * (lc - 1)) - fm.getDescent());
+		//if(va == VALIGN.BOTTOM) y = box.y + box.height - textHeight(g,f,text) * lc + (fm.getDescent() * lc);
 		String[] words = text.split(" ");
 		String currentLine = words[0];
 		for(int i = 1; i < words.length; i++){

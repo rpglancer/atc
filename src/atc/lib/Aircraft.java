@@ -210,7 +210,6 @@ public class Aircraft extends Entity{
 				g2d.setColor(Color.green);
 		}
 		Draw.centeredsquare(g, loc, 2, Color.green, 1.0f);
-//		Draw.centeredsquare(g, loc, (int)(PPNM * 0.25), Color.green, 1.0f);
 		Draw.centeredcircle(g, loc, 1*PPNM, g2d.getColor());
 		g2d.drawLine((int)loc.getX(), (int)loc.getY(), (int)ex, (int)ey);
 		Draw.flightinfo(g, this);
@@ -270,6 +269,10 @@ public class Aircraft extends Entity{
 	public void setFlightInfo(String oper, String number){
 		airline = oper;
 		flightNumber = number;
+	}
+	
+	public void setHeadingCurrent(int hdg){
+		headingCurrent = hdg;
 	}
 	
 	public void setHeadingDesired(Coords coords){

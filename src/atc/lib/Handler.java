@@ -121,6 +121,14 @@ public class Handler {
 						}
 					}
 					break;
+					
+				case AIRPORT:
+					if(coords.getX() >= ent.getArea().getMinX() && coords.getX() <= ent.getArea().getMaxX()){
+						if(coords.getY() >= ent.getArea().getMinY() && coords.getY() <= ent.getArea().getMaxX()){
+							return ent;
+						}
+					}
+					break;
 				case FIX:
 					Fix f = (Fix)ent;
 					if(coords.getX() >= ent.getArea().getMinX() && coords.getX() <= ent.getArea().getMaxX()

@@ -47,10 +47,16 @@ public class MouseInput implements MouseMotionListener, MouseListener{
 				ent = null;
 				ent = handler.retrieve(new Coords(arg0.getX(),arg0.getY()));
 				if(ent != null && ent.type==TYPE.AIRCRAFT){
-					ent.select();//new
-					handler.getHud().select((Aircraft)ent);
+					ent.select();
+					handler.getHud().select(ent);
 				}
-				if(ent == null)handler.getHud().deselect();
+				else if(ent != null && ent.type == TYPE.AIRPORT){
+					ent.select();
+					handler.getHud().select(ent);
+				}
+				if(ent == null){
+					handler.getHud().deselect();
+				}
 			}
 			break;
 		case MouseEvent.BUTTON3:
