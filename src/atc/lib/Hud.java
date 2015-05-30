@@ -29,7 +29,7 @@ public class Hud extends Entity{
 	private int selectedHdg;
 	private double selectedAlt;
 	
-	private Aircraft aircraft = null;
+//	private Aircraft aircraft = null;
 	private Entity ent = null;
 	
 	private static Rectangle altBox = new Rectangle(0 + (atc.Game.HUDWIDTH / 2) - (boxWidth/2), btnHeight/2, boxWidth, boxHeight);
@@ -122,15 +122,15 @@ public class Hud extends Entity{
 		g.setFont(prevF);
 	}
 
-	public void select(Aircraft a) {
-		if(a!=null){
-			aircraft = a;
-			selectedSpeed = a.getKIASDes();
-			selectedAlt = a.getAltDes();
-			selectedHdg = a.getHdgDes();
-			isSelected = true;
-		}
-	}
+//	public void select(Aircraft a) {
+//		if(a!=null){
+//			aircraft = a;
+//			selectedSpeed = a.getKIASDes();
+//			selectedAlt = a.getAltDes();
+//			selectedHdg = a.getHdgDes();
+//			isSelected = true;
+//		}
+//	}
 	
 	public void select(Entity ent){
 		if(ent != null){
@@ -252,7 +252,6 @@ public class Hud extends Entity{
 	private void aircraftHud(MouseEvent arg0){
 		int mouseX = arg0.getX();
 		int mouseY = arg0.getY();
-		System.out.println("Mouse coords: " + mouseX + ", " + mouseY);
 		Aircraft aircraft = (Aircraft)ent;
 		switch(aircraft.getFlight()){
 		case ARRIVAL:
@@ -443,23 +442,23 @@ public class Hud extends Entity{
 		}
 		if(a.getDeliveries().size() >= 2){
 			Draw.box(g2d, delivr1, 2, Color.green, Color.black);
-			Text.boxText(g2d, Fonts.delivtext, delivr0, HALIGN.CENTER, VALIGN.TOP, a.getDeliveries().elementAt(1).getName());
-			Text.boxText(g2d, Fonts.delivtext, delivr0, HALIGN.CENTER, VALIGN.BOTTOM, a.getDeliveries().elementAt(1).getFix().getID());
+			Text.boxText(g2d, Fonts.delivtext, delivr1, HALIGN.CENTER, VALIGN.TOP, a.getDeliveries().elementAt(1).getName());
+			Text.boxText(g2d, Fonts.delivtext, delivr1, HALIGN.CENTER, VALIGN.BOTTOM, a.getDeliveries().elementAt(1).getFix().getID());
 		}
 		if(a.getDeliveries().size() >= 3){
 			Draw.box(g2d, delivr2, 2, Color.green, Color.black);
-			Text.boxText(g2d, Fonts.delivtext, delivr0, HALIGN.CENTER, VALIGN.TOP, a.getDeliveries().elementAt(2).getName());
-			Text.boxText(g2d, Fonts.delivtext, delivr0, HALIGN.CENTER, VALIGN.BOTTOM, a.getDeliveries().elementAt(2).getFix().getID());
+			Text.boxText(g2d, Fonts.delivtext, delivr2, HALIGN.CENTER, VALIGN.TOP, a.getDeliveries().elementAt(2).getName());
+			Text.boxText(g2d, Fonts.delivtext, delivr2, HALIGN.CENTER, VALIGN.BOTTOM, a.getDeliveries().elementAt(2).getFix().getID());
 		}
 		if(a.getDeliveries().size() >= 4){
 			Draw.box(g2d, delivr3, 2, Color.green, Color.black);
-			Text.boxText(g2d, Fonts.delivtext, delivr0, HALIGN.CENTER, VALIGN.TOP, a.getDeliveries().elementAt(3).getName());
-			Text.boxText(g2d, Fonts.delivtext, delivr0, HALIGN.CENTER, VALIGN.BOTTOM, a.getDeliveries().elementAt(3).getFix().getID());
+			Text.boxText(g2d, Fonts.delivtext, delivr3, HALIGN.CENTER, VALIGN.TOP, a.getDeliveries().elementAt(3).getName());
+			Text.boxText(g2d, Fonts.delivtext, delivr3, HALIGN.CENTER, VALIGN.BOTTOM, a.getDeliveries().elementAt(3).getFix().getID());
 		}
 		if(a.getDeliveries().size() >= 5){
 			Draw.box(g2d, delivr4, 2, Color.green, Color.black);
-			Text.boxText(g2d, Fonts.delivtext, delivr0, HALIGN.CENTER, VALIGN.TOP, a.getDeliveries().elementAt(4).getName());
-			Text.boxText(g2d, Fonts.delivtext, delivr0, HALIGN.CENTER, VALIGN.BOTTOM, a.getDeliveries().elementAt(4).getFix().getID());
+			Text.boxText(g2d, Fonts.delivtext, delivr4, HALIGN.CENTER, VALIGN.TOP, a.getDeliveries().elementAt(4).getName());
+			Text.boxText(g2d, Fonts.delivtext, delivr4, HALIGN.CENTER, VALIGN.BOTTOM, a.getDeliveries().elementAt(4).getFix().getID());
 		}
 	}
 	

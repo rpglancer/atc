@@ -30,7 +30,7 @@ public class Airport extends Entity{
 	private Vector<Aircraft> delivery;
 	private Vector<Fix> fixes;
 	private Vector<Rectangle> arrivalSectors;	//	Sectors [rectangles] inside which arrivals can spawn
-	private Vector<Runway> availRunways;		//	All runways, only used for checking overlap during placement spawn.
+	private static Vector<Runway> availRunways;		//	All runways, only used for checking overlap during placement spawn.
 	private Vector<Runway> arivRunways;			//	Arrival Runways
 	private Vector<Runway> depRunways;			//	Departure Runways
 
@@ -62,9 +62,9 @@ public class Airport extends Entity{
 		genRunwyDept();
 		
 		openRunway(TYPE.RUNWAY_ARRIVE);
-		openRunway(TYPE.RUNWAY_ARRIVE);
+//		openRunway(TYPE.RUNWAY_ARRIVE);
 		openRunway(TYPE.RUNWAY_DEPART);
-		openRunway(TYPE.RUNWAY_DEPART);
+//		openRunway(TYPE.RUNWAY_DEPART);
 		
 		aircraft = new Vector<Aircraft>();
 		delivery = new Vector<Aircraft>();
@@ -93,6 +93,14 @@ public class Airport extends Entity{
 	
 	public Vector<Aircraft> getDeliveries(){
 		return delivery;
+	}
+	
+	public static Runway getRunway(String id){
+		for(int i = 0; i < availRunways.size(); i++){
+			if(availRunways.elementAt(i).getID().equals(id))
+				return availRunways.elementAt(i);
+		}
+		return null;
 	}
 	
 	public static float[] getScoreArray(){
@@ -129,6 +137,7 @@ public class Airport extends Entity{
 		chkSeparation();
 		chkCrash();
 		Calc.skill(scoreArray);
+		manageRunways();
 	}
 
 	@Override
@@ -204,6 +213,9 @@ public class Airport extends Entity{
 				continue;
 			
 			if(aircraft.elementAt(i).getKIAS() == 0){
+				char[] temp = aircraft.elementAt(i).getLocalizer().getID().toCharArray();
+				String id = String.valueOf(temp, 3, temp.length - 3);
+				getRunway(id).setInUse(false);
 				endFlight(aircraft.elementAt(i));
 				scoreArray[SCORE.LANDED.getSID()]++;
 			}
@@ -242,17 +254,21 @@ public class Airport extends Entity{
 				if(src == tgt)
 					continue;
 				else{
-					if(Math.abs(src.getAltCur() - tgt.getAltCur()) <= 1){
-						if(Calc.distanceNM(src.getCoords(), tgt.getCoords()) <= 1){
+					if(Math.abs(src.getAltCur() - tgt.getAltCur()) < 1){
+						if(Calc.distanceNM(src.getCoords(), tgt.getCoords()) < 2){
+							if(src.getFlight() == FLIGHT.ILS || src.getFlight() == FLIGHT.LANDING &&
+								tgt.getFlight() == FLIGHT.ILS || tgt.getFlight() == FLIGHT.LANDING){
+								if(src.getLocalizer() != tgt.getLocalizer())
+									continue;
+							}
 							System.out.println("Set conflict");
 							src.setConflict(true);
-							scoreArray[SCORE.SEPINCTIME.getSID()] += 1;
+//							scoreArray[SCORE.SEPINCTIME.getSID()] += 1;
 							break;
 						}
 					}
 					else{
 						src.setConflict(false);
-						//break;
 					}
 				}
 			}
@@ -422,12 +438,25 @@ public class Airport extends Entity{
 		}
 	}
 	
+	private void manageRunways(){
+		double ps = scoreArray[SCORE.PLYRSKILL.getSID()];
+		if(ps >= 3 && curRunwyAriv == 1)
+			openRunway(TYPE.RUNWAY_ARRIVE);
+		else if(ps < 3 && curRunwyAriv == 2)
+			closeRunway(TYPE.RUNWAY_ARRIVE);
+		if(ps >= 6 && curRunwyDept == 1)
+			openRunway(TYPE.RUNWAY_DEPART);
+		else if(ps < 6 && curRunwyDept == 2)
+			closeRunway(TYPE.RUNWAY_DEPART);
+	}
+	
 	/**
 	 * Method for opening up a runway for aircraft.
 	 * @param toOpen	The TYPE of runway to open.
 	 */
 	private void openRunway(TYPE toOpen){
 		if(toOpen == TYPE.RUNWAY_ARRIVE){
+			if(curRunwyAriv == maxRunwyAriv) return;
 			for(int i = 0; i < arivRunways.size(); i++){
 				if(arivRunways.elementAt(i).isOpen())
 					continue;
@@ -439,6 +468,7 @@ public class Airport extends Entity{
 			}
 		}
 		else if(toOpen == TYPE.RUNWAY_DEPART){
+			if(curRunwyDept == maxRunwyDept) return;
 			for(int i = 0; i < depRunways.size(); i++){
 				if(depRunways.elementAt(i).isOpen())
 					continue;
@@ -500,63 +530,7 @@ public class Airport extends Entity{
 		return false;
 	}
 
-	@Deprecated
-	private boolean checkRunwayConflict(Runway rwy){
-		if(availRunways.size() == 0)
-			return false;
-		else{
-			for(int i = 0; i < availRunways.size(); i++){
-				Runway tgt = availRunways.elementAt(i);
-				if(Calc.distanceNM(rwy.getCoords(), tgt.getCoords()) <= 3){
-					return true;
-				}
-				if(Calc.lineIntcpt(rwy.getRunwayPath(), tgt.getRunwayPath())){
-					return true;
-				}
-				if(rwy.type == TYPE.RUNWAY_ARRIVE){
-					if(tgt.type == TYPE.RUNWAY_ARRIVE && Calc.lineIntcpt(rwy.getLocalizer().getLocPath(), tgt.getLocalizer().getLocPath())){
-						return true;
-					}
-					else if(tgt.type == TYPE.RUNWAY_ARRIVE && Calc.lineIntcpt(rwy.getRunwayPath(), tgt.getLocalizer().getLocPath())){
-						return true;
-					}
-					else if(tgt.type == TYPE.RUNWAY_DEPART && Calc.lineIntcpt(rwy.getLocalizer().getLocPath(), tgt.getDepartPath())){
-						return true;
-					}
-					else if(tgt.type == TYPE.RUNWAY_DEPART && Calc.lineIntcpt(rwy.getRunwayPath(), tgt.getDepartPath())){
-						return true;
-					}
-					else if(Calc.lineIntcpt(rwy.getLocalizer().getLocPath(), tgt.getRunwayPath())){
-						return true;
-					}
-					else if(tgt.type == TYPE.RUNWAY_DEPART){
-						int dor = 0 + rwy.getHdg();
-						int dot = 0 + tgt.getHdg();
-						int doa = Math.abs(dor-dot);
-						if(doa < 45) return true;
-					}
-				}
-				if(rwy.type == TYPE.RUNWAY_DEPART){
-					if(tgt.type == TYPE.RUNWAY_ARRIVE && Calc.lineIntcpt(rwy.getDepartPath(), tgt.getLocalizer().getLocPath())){
-						return true;
-					}
-					else if(tgt.type == TYPE.RUNWAY_DEPART && Calc.lineIntcpt(rwy.getDepartPath(), tgt.getDepartPath())){
-						return true;
-					}
-					else if(Calc.lineIntcpt(rwy.getDepartPath(), tgt.getRunwayPath())){
-						return true;
-					}
-					else if(tgt.type == TYPE.RUNWAY_ARRIVE){
-						int dor = 0 + rwy.getHdg();
-						int dot = 0 + tgt.getHdg();
-						int doa = Math.abs(dor-dot);
-						if(doa < 45) return true;		
-					}
-				}
-			}
-		}
-		return false;
-	}
+
 	
 	private void spawn(){
 		float ps = scoreArray[SCORE.PLYRSKILL.getSID()];

@@ -151,6 +151,10 @@ public class Aircraft extends Entity{
 		return history;
 	}
 	
+	public Localizer getLocalizer(){
+		return local;
+	}
+	
 	public String getName(){
 		return airline+flightNumber;
 	}
@@ -526,7 +530,6 @@ public class Aircraft extends Entity{
 				setHeadingDesired(fix.getCoords());
 				if(Calc.distanceNM(loc, fix.getCoords()) <= 0.5 && fixHeading >= 0){
 					headingDesired = headingCurrent;
-//					setHeadingDesired(fixHeading);
 					fix = null;
 					fixHeading = -1;
 					instruction = "";
@@ -546,6 +549,14 @@ public class Aircraft extends Entity{
 				Airport.getScoreArray()[SCORE.CRUISEALT.getSID()]++;
 			}
 			break;
+		case GOAROUND:
+			altDesired = 2.5;
+			kiasDesired = 180;
+			headingDesired = headingCurrent;
+			if(altCurrent == altDesired && kiasCurrent == kiasDesired){
+				flight = FLIGHT.ARRIVAL;
+			}
+			break;
 		case HANDOFF_AR:
 //			blink();
 			break;
@@ -559,8 +570,18 @@ public class Aircraft extends Entity{
 			if(altCurrent <= 0.1){
 				flight = FLIGHT.LANDING;
 			}
+			else if(altCurrent <= 0.5){
+				char[] temp = local.getID().toCharArray();
+				String id = String.valueOf(temp, 3, temp.length - 3);
+				if(Airport.getRunway(id).getInUse()){
+					flight = FLIGHT.GOAROUND;
+				}
+			}
 			break;
 		case LANDING:
+			char[] temp = local.getID().toCharArray();
+			String id = String.valueOf(temp, 3, temp.length - 3);
+			Airport.getRunway(id).setInUse(true);
 			headingCurrent = local.getHdg();
 			kiasDesired = 0;
 			altDesired = 0;

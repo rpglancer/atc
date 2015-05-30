@@ -14,6 +14,7 @@ public class Runway extends Entity{
 	private Line2D departPath = null;
 	private Line2D runwayPath = null;
 	private Localizer localizer;
+	private boolean inUse = false;
 	private boolean isOpen = false;
 	private double heading;
 	private int length;					//	Mite still b useful
@@ -34,6 +35,7 @@ public class Runway extends Entity{
 			ec = Calc.relativeCoords(loc, heading, PPNM*8);
 			departPath = new Line2D.Double(loc.getX(),loc.getY(),ec.getX(),ec.getY());
 		}
+		Game.registerWithHandler(this);
 	}
 
 	@Deprecated
@@ -95,12 +97,16 @@ public class Runway extends Entity{
 		isOpen = false;
 		if(type == TYPE.RUNWAY_ARRIVE)
 			Game.finalizeWithHandler(localizer);
-		Game.finalizeWithHandler(this);
+//		Game.finalizeWithHandler(this);
+	}
+	
+	public boolean getInUse(){
+		return inUse;
 	}
 	
 	public void open(){
 		isOpen = true;
-		Game.registerWithHandler(this);
+//		Game.registerWithHandler(this);
 		if(type == TYPE.RUNWAY_ARRIVE)
 			Game.registerWithHandler(localizer);
 	}
@@ -119,7 +125,7 @@ public class Runway extends Entity{
 		g2d.draw(runwayPath);
 		
 		g2d.setStroke(ps);
-		if(type == TYPE.RUNWAY_DEPART){
+		if(isOpen && type == TYPE.RUNWAY_DEPART){
 			g2d.setColor(Color.magenta);
 			g2d.drawLine((int)departPath.getX1(), (int)departPath.getY1(), (int)departPath.getX2(), (int)departPath.getY2());
 		}
@@ -133,6 +139,10 @@ public class Runway extends Entity{
 	public void setCoords(Coords coords){
 		loc.setX(coords.getX());
 		loc.setY(coords.getY());
+	}
+	
+	public void setInUse(boolean use){
+		inUse = use;
 	}
 
 	@Override
