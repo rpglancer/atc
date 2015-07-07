@@ -81,7 +81,7 @@ public class Handler {
 	}
 	
 	/**
-	 * Renders all entites currently registered with the Handler.
+	 * Renders all entities currently registered with the Handler.
 	 * @param g	Graphics context.
 	 */
 	public void render(Graphics g){

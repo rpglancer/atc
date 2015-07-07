@@ -29,8 +29,7 @@ public class Hud extends Entity{
 	private int selectedHdg;
 	private double selectedAlt;
 	
-//	private Aircraft aircraft = null;
-	private Entity ent = null;
+//	private Entity ent = null;
 	
 	private static Rectangle altBox = new Rectangle(0 + (atc.Game.HUDWIDTH / 2) - (boxWidth/2), btnHeight/2, boxWidth, boxHeight);
 	private static Rectangle spdBox = new Rectangle(0 + (atc.Game.HUDWIDTH / 2) - (boxWidth/2), (int)altBox.getMaxY() + 16, boxWidth, boxHeight);
@@ -70,9 +69,13 @@ public class Hud extends Entity{
 
 	@Override
 	public void deselect() {
-		if(ent != null){
-			ent.deselect();
-			ent = null;
+//		if(ent != null){
+//			ent.deselect();
+//			ent = null;
+//		}
+		if(MouseInput.getEntity() != null){
+			MouseInput.getEntity().deselect();
+			MouseInput.setEntity(null);
 		}
 		selectedSpeed = 0;
 		selectedAlt = 0;
@@ -81,8 +84,10 @@ public class Hud extends Entity{
 	}
 	
 	public void processHud(MouseEvent arg0){
-		if(isSelected && ent != null){
-			switch(ent.type){
+		if(isSelected && MouseInput.getEntity() != null){
+//		if(isSelected && ent != null){
+			switch(MouseInput.getEntity().type){
+//			switch(ent.type){
 			case AIRCRAFT:
 				aircraftHud(arg0);
 				break;
@@ -97,7 +102,8 @@ public class Hud extends Entity{
 	
 	@Override
 	public void render(Graphics g){
-		Entity temp = ent;
+		Entity temp = MouseInput.getEntity();
+//		Entity temp = ent;
 		if(temp == null) deselect();
 		Font prevF = g.getFont();
 		Color prevC = g.getColor();
@@ -134,8 +140,9 @@ public class Hud extends Entity{
 	
 	public void select(Entity ent){
 		if(ent != null){
-			this.ent = ent;
-			switch(this.ent.type){
+//			this.ent = ent;
+//			switch(this.ent.type){
+			switch(ent.type){
 			case AIRCRAFT:
 				Aircraft a = (Aircraft)ent;
 				selectedSpeed = a.getKIASDes();
@@ -158,12 +165,16 @@ public class Hud extends Entity{
 
 	@Override
 	public void tick(){
-		if(isSelected && ent == null)
+//		if(isSelected && ent == null)
+		if(isSelected && MouseInput.getEntity() == null)
 			deselect();
-		if(isSelected && !ent.isSelected)
+//		if(isSelected && !ent.isSelected)
+		if(isSelected && !MouseInput.getEntity().isSelected)
 			deselect();
-		if(isSelected && ent.type == TYPE.AIRCRAFT && ent.isSelected){
-			Aircraft temp = (Aircraft)ent;
+//		if(isSelected && ent.type == TYPE.AIRCRAFT && ent.isSelected){
+		if(isSelected && MouseInput.getEntity().type == TYPE.AIRCRAFT && MouseInput.getEntity().isSelected){
+//			Aircraft temp = (Aircraft)ent;
+			Aircraft temp = (Aircraft)MouseInput.getEntity();
 			if(selectedHdg != temp.getHdgDes()){
 				selectedHdg = temp.getHdgDes();
 			}
@@ -210,7 +221,8 @@ public class Hud extends Entity{
 	private void airportHud(MouseEvent arg0){
 		int mouseX = arg0.getX();
 		int mouseY = arg0.getY();
-		Airport a = (Airport)ent;
+//		Airport a = (Airport)ent;
+		Airport a = (Airport)MouseInput.getEntity();
 		int vs = a.getDeliveries().size();
 		if(a.getDeliveries().size() == 0){
 			if(mouseX >= hndoff.getMinX() && mouseX <= hndoff.getMaxX() && mouseY >= hndoff.getMinY() && mouseY <= hndoff.getMaxY()){
@@ -252,7 +264,8 @@ public class Hud extends Entity{
 	private void aircraftHud(MouseEvent arg0){
 		int mouseX = arg0.getX();
 		int mouseY = arg0.getY();
-		Aircraft aircraft = (Aircraft)ent;
+//		Aircraft aircraft = (Aircraft)ent;
+		Aircraft aircraft = (Aircraft)MouseInput.getEntity();
 		switch(aircraft.getFlight()){
 		case ARRIVAL:
 			if(mouseX >= decAlt.getMinX() && mouseX <= decAlt.getMaxX() && mouseY >= decAlt.getMinY() && mouseY <= decAlt.getMaxY()){
@@ -332,9 +345,11 @@ public class Hud extends Entity{
 	}
 	
 	private void apply(){
-		switch(ent.type){
+//		switch(ent.type){
+		switch(MouseInput.getEntity().type){
 		case AIRCRAFT:
-			Aircraft a = (Aircraft)ent;
+//			Aircraft a = (Aircraft)ent;
+			Aircraft a = (Aircraft)MouseInput.getEntity();
 			a.setVelocityDesired(selectedSpeed);
 			a.setHeadingDesired(selectedHdg);
 			a.setAltitudeDesired(selectedAlt);
@@ -424,9 +439,11 @@ public class Hud extends Entity{
 	}
 	
 	private void renderAirportHUD(Graphics g, Entity temp){
-		if(ent == null || ent.type != TYPE.AIRPORT)
+//		if(ent == null || ent.type != TYPE.AIRPORT)
+		if(MouseInput.getEntity() == null || MouseInput.getEntity().type != TYPE.AIRPORT)
 			return;
-		Airport a = (Airport)ent;
+//		Airport a = (Airport)ent;
+		Airport a = (Airport)MouseInput.getEntity();
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setColor(Color.cyan);
 		g2d.setFont(Fonts.hudNumber);

@@ -11,8 +11,16 @@ import atc.type.TYPE;
 public class MouseInput implements MouseMotionListener, MouseListener{
 	private static Coords pressed;
 	private static Coords at;
-	private Entity ent = null;
+	private static Entity ent = null;
 	private Handler handler;
+	
+	public static Entity getEntity(){
+		return ent;
+	}
+	
+	public static void setEntity(Entity e){
+		ent = e;
+	}
 
 	public MouseInput(Game game, Handler handler){
 		this.handler = handler;
